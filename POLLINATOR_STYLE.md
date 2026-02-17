@@ -1,12 +1,13 @@
 # Pollinator Project Style
 
-A practical, opinionated style guide for building small Go server-side binaries with a CLI and HTTP API, prioritizing clean, human-readable code and minimal dependencies.
+A practical, opinionated style guide for building small Go server-side binaries with a CLI and HTTP API, prioritizing author ergonomics, human-readable code, and minimal dependencies.
 
 ## Core principles
 - Prefer the Go standard library; add external dependencies only when they clearly remove significant code or risk. Libraries under `git.sr.ht/~jakintosh` are first-class.
 - Keep architecture shallow: CLI -> service -> database. The service layer owns business logic and HTTP handlers.
 - Make dependencies explicit via options and constructors; avoid package-level state for new code.
 - Favor clarity over cleverness: simple data flow, direct error handling, minimal indirection.
+- Optimize for author/readability ergonomics, not just machine convenience.
 - Keep the API and CLI aligned: subcommands map to API resources and paths.
 
 ## Repository layout
@@ -53,6 +54,7 @@ internal/
   - `ledger_service.go`
   - `ledger_api.go`
 - Do not split into many tiny files unless the split improves readability immediately.
+- Prioritize locality of behavior: keep a domain's API structs, validation, service methods, and handlers together in `<domain>.go` until size or clarity demands a split.
 
 ## Dependency policy
 - Default to stdlib (`net/http`, `database/sql`, `encoding/json`, `time`, `log`, `errors`).
@@ -81,6 +83,14 @@ cmd/<bin>/
 └── <resource>.go    # per-resource subcommands
 ```
 
+### Command handler phases
+- Structure command handlers by phase, in order:
+  - extract all inputs first (flags, args, env, files)
+  - run a full hygiene/validation pass (required values, normalization, bounds)
+  - perform setup (clients, stores, auth, transport)
+  - execute the operation and format output
+- Avoid interleaving phases or hiding setup/validation inside long chained expressions.
+
 ## Configuration and environment
 - Default config directory: `~/.config/<bin>`.
 - Use `envs.ConfigOptions` or `envs.ConfigOptionsAnd(...)` to add config flags.
@@ -106,6 +116,7 @@ func New(opts Options) (*Service, error)
 - Store interfaces are defined in `internal/service`, not in the database layer.
 - Services should not mutate global state; dependency injection is explicit.
 - Provide `Start()` / `Stop()` when background processing is needed.
+- Provide a `Serve(...)` entry point on the service that accepts host/port/base-path inputs, builds the router, and runs the HTTP server.
 - Keep business logic and HTTP handlers in the same file when they share types (e.g., `ledger.go`, `services.go`).
 
 ### Store contracts (canonical pattern)
@@ -179,9 +190,13 @@ func (e DatabaseError) Unwrap() error { return e.Err }
 
 ## HTTP/API design
 - Base path prefix: `/api/v1`.
-- Use `http.NewServeMux()` with method patterns (Go 1.22+):
+- Use `http.NewServeMux()` with explicit method+path patterns (Go 1.22+):
   - `mux.HandleFunc("GET /resource", ...)`
-  - `mux.HandleFunc("POST /resource/{id}", ...)`
+  - `mux.HandleFunc("POST /resource", ...)`
+  - `mux.HandleFunc("PUT /resource/{id}", ...)`
+  - `mux.HandleFunc("DELETE /resource/{id}", ...)`
+  - `mux.HandleFunc("OPTIONS /resource", ...)`
+- Do not rely on method switches inside handlers.
 - Use `r.PathValue("id")` for path parameters.
 - Prefer `command-go/pkg/wire` helpers:
   - `wire.WriteData(w, status, data)`
@@ -194,18 +209,64 @@ func (e DatabaseError) Unwrap() error { return e.Err }
   - Preflight OPTIONS handlers for CORS are explicitly registered.
 
 ### Router composition
-- Build routers by resource and register in `Service.BuildRouter()`:
+- Build one root router as the composition layer: create one `ServeMux`, compose domain routers into it, and keep startup/listen concerns outside this step.
+- Keep domain routers additive and local: `buildXRouter(root, mw)` registers only that domain's routes (including any scoped child mux setup) in that domain's file/package area.
+- Use scoped child muxes at boundaries (`/campaigns`, `/admin`) with trimmed prefixes to keep child path logic modular.
+- Apply cross-cutting middleware at the highest safe boundary (for example, auth once on `/admin`) rather than per-route wrapping.
+- Construct middleware bundles from `Service` dependencies inside router composition, then pass middleware explicitly to domain router builders (not via package globals).
+- Build the API tree independently, then mount deployment base paths with an outer `http.StripPrefix` in `Serve()`.
 
 ```go
-func (s *Service) BuildRouter() http.Handler {
-    mux := http.NewServeMux()
-    s.buildHealthRouter(mux)
-    s.buildResourceRouter(mux, mw)
-    return mux
+type Middleware struct {
+    auth      func(http.Handler) http.Handler
+    cors      func(http.Handler) http.Handler
+    rateLimit func(http.Handler) http.Handler
+}
+
+func (s *Service) buildRouter() http.Handler {
+    mw := Middleware{
+        auth:      s.keys.WithAuth,
+        cors:      s.cors.WithCORS,
+        rateLimit: s.withRateLimit,
+    }
+
+    root := http.NewServeMux()
+    s.buildHealthRouter(root)
+    s.buildCampaignRouter(root, mw)
+    s.buildAdminRouter(root, mw)
+
+    return root
+}
+
+func (s *Service) buildCampaignRouter(root *http.ServeMux, mw Middleware) {
+    campaigns := http.NewServeMux()
+    campaigns.HandleFunc("GET /", s.handleListCampaigns)
+    campaigns.HandleFunc("POST /", s.handleCreateCampaign)
+
+    campaignAPI := http.StripPrefix("/campaigns", campaigns)
+    campaignHandler := mw.rateLimit(campaignAPI)
+    root.Handle("/campaigns/", campaignHandler)
+}
+
+func (s *Service) buildAdminRouter(root *http.ServeMux, mw Middleware) {
+    admin := http.NewServeMux()
+    admin.HandleFunc("GET /users", s.handleAdminUsers)
+    admin.HandleFunc("OPTIONS /users", s.handleAdminUsersOptions)
+
+    adminAPI := http.StripPrefix("/admin", admin)
+    protectedAdmin := mw.auth(adminAPI)
+    root.Handle("/admin/", protectedAdmin)
+}
+
+func (s *Service) Serve(host string, port int, basePath string) error {
+    api := s.buildRouter()
+    mounted := http.StripPrefix(basePath, api)
+    addr := net.JoinHostPort(host, strconv.Itoa(port))
+    return http.ListenAndServe(addr, mounted)
 }
 ```
 
-- Use `http.StripPrefix("/api/v1", ...)` in `Serve()`.
+- Keep deployment path mounting (`http.StripPrefix`) in `Serve()` so serving concerns stay in one place.
 
 ## Database layer
 - SQLite via `modernc.org/sqlite`.
@@ -312,6 +373,7 @@ func (s *Service) DoThing(
 - Group related logic with blank lines; avoid excessive comments.
 - Keep error strings lowercase and without punctuation.
 - Prefer explicit names (`CreateService`, `GetServiceByName`) over abbreviations.
+- Prefer one operation per statement; use local variables for intermediate values instead of chaining multiple calls inline.
 - JSON tags are `snake_case`.
 
 ## Canonical defaults (use unless there's a strong reason not to)
