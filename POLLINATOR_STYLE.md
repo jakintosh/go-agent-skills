@@ -5,10 +5,17 @@ A practical, opinionated style guide for building small Go server-side binaries 
 ## Core principles
 - Prefer the Go standard library; add external dependencies only when they clearly remove significant code or risk. Libraries under `git.sr.ht/~jakintosh` are first-class.
 - Keep architecture shallow: CLI -> service -> database. The service layer owns business logic and HTTP handlers.
+- Separate composition from behavior: keep runtime bootstrapping (flags, env vars, secrets, sockets) in an outer layer, and keep business logic + HTTP behavior in inner packages that are config-source agnostic.
 - Make dependencies explicit via options and constructors; avoid package-level state for new code.
 - Favor clarity over cleverness: simple data flow, direct error handling, minimal indirection.
 - Optimize for author/readability ergonomics, not just machine convenience.
 - Keep the API and CLI aligned: subcommands map to API resources and paths.
+
+### Composition roots
+- Use two composition roots:
+  - production root for real env/files/network wiring
+  - test root for ephemeral, in-memory, deterministic wiring
+- Keep composition roots thin; they wire dependencies and launch lifecycle, while domain behavior stays in service/domain packages.
 
 ## Repository layout
 ```
@@ -73,6 +80,8 @@ internal/
 - Use `resolveOption` helpers to apply precedence: CLI option -> env var -> default.
 - Credentials are loaded from a directory (usually `/etc/<bin>`) via small helpers like `loadCredential`.
 - For versioning, use `//go:generate go run git.sr.ht/~jakintosh/command-go/pkg/version/generate` and include `version.Command`.
+- each args.Command should be defined as a global var in the package root, and should not use "factory" functions that return the args.Command
+- Each individual command should be defined as a unique named struct; subcommands should be included by name, *not* defined inside the parent struct
 
 ### Canonical CLI layout
 ```
@@ -83,7 +92,8 @@ cmd/<bin>/
 └── <resource>.go    # per-resource subcommands
 ```
 
-### Command handler phases
+### Command handler style
+- Each handler function should be defined directly inside the args.Command struct, and not delegated to a separate function
 - Structure command handlers by phase, in order:
   - extract all inputs first (flags, args, env, files)
   - run a full hygiene/validation pass (required values, normalization, bounds)
@@ -113,6 +123,7 @@ type Options struct {
 func New(opts Options) (*Service, error)
 ```
 
+- Define explicit dependencies in `Options`; critical dependencies (store, auth module, CORS module, clock, and other required modules) must be validated in `New(...)` and fail fast when missing.
 - Store interfaces are defined in `internal/service`, not in the database layer.
 - Services should not mutate global state; dependency injection is explicit.
 - Provide `Start()` / `Stop()` when background processing is needed.
@@ -123,6 +134,7 @@ func New(opts Options) (*Service, error)
 - The service layer owns the domain model and the persistence contract.
 - Define domain structs in `internal/service` first, then define store methods in terms of those structs.
 - Keep the store interface focused on domain operations, not SQL concepts.
+- Keep persistence behind interfaces in domain code; concrete SQL/Redis/etc. adapters live in infrastructure packages (`internal/database`, `internal/cache`, etc.).
 
 ```go
 // internal/service/ledger.go
@@ -204,9 +216,13 @@ func (e DatabaseError) Unwrap() error { return e.Err }
   - `wire.ParsePagination(r)`
 - Standard response format (from `wire`):
   - `{ "error": { "message": "..." }, "data": ... }`
+- Treat cross-cutting concerns as injected modules: auth/CORS/rate-limit/keys are initialized as services and applied as middleware during router composition, not hardcoded in handlers.
 - CORS and auth are applied as middleware using `keys` and `cors` services:
   - Auth via `Authorization: Bearer <token>` header.
   - Preflight OPTIONS handlers for CORS are explicitly registered.
+- HTTP handlers should be located in the related `service` package; i.e. handleCampaignX() should live in service/campaign.go
+- Bias towards API resource routes just directly returning the json version of that resource, by making sure to define json tags for all exported properties
+- Define all Response/Request structs for the API in the same service file, and export it so that it can be imported in other packages that need it, like tests or CLI
 
 ### Router composition
 - Build one root router as the composition layer: create one `ServeMux`, compose domain routers into it, and keep startup/listen concerns outside this step.
@@ -215,6 +231,7 @@ func (e DatabaseError) Unwrap() error { return e.Err }
 - Apply cross-cutting middleware at the highest safe boundary (for example, auth once on `/admin`) rather than per-route wrapping.
 - Construct middleware bundles from `Service` dependencies inside router composition, then pass middleware explicitly to domain router builders (not via package globals).
 - Build the API tree independently, then mount deployment base paths with an outer `http.StripPrefix` in `Serve()`.
+- Keep separate router composition roots for production and tests so test routing can run in-process with deterministic dependencies and without external network listeners.
 
 ```go
 type Middleware struct {
@@ -342,10 +359,18 @@ func (db *DB) GetTransactions(ledger string, limit, offset int) ([]service.Trans
 - Unit tests live alongside source (`*_test.go`).
 - Prefer external test packages (`package service_test`) to test public behavior.
 - Use `internal/testutil` for setup, fixtures, and helpers:
-  - `SetupTestEnv(t)` returns a ready-to-use service with in-memory SQLite.
+  - `SetupTestEnv(t)` creates DB + service + router with deterministic defaults and returns a small state struct used by tests.
+  - Use fixed test tokens, in-memory stores, short debounce windows/timeouts, and fake clocks when needed.
+  - Avoid external files/secrets in default tests.
+  - Own lifecycle in setup: start required background workers and stop them with `t.Cleanup()`.
   - Helpers for time creation and data seeding.
-- HTTP tests use `command-go/pkg/wire` (`TestGet`, `TestPost`, headers).
-- Add `//go:build integration` for integration tests with external dependencies, and separate integration tests from unit tests.
+- Prefer in-process HTTP tests: call the built router directly with `command-go/pkg/wire` (`TestGet`, `TestPost`, headers) instead of starting real listeners.
+  - HTTP tests should build each component of a test in its own statement: body, URL, and headers should be clearly defined before being passed into a `TestX` function.
+- Layer tests by concern:
+  - store tests validate adapter behavior
+  - service tests validate business rules
+  - API tests validate middleware, routing, and serialization end-to-end
+- Keep true external integrations selective: put webhooks/third-party API scenarios behind `//go:build integration`, and keep the default suite fast and hermetic.
 - Use `t.Helper()` and `t.Cleanup()` consistently.
 - Use `t.Parallel()` when tests are isolated and fast.
 
