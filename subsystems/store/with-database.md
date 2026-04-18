@@ -156,4 +156,7 @@ func (db *DB) GetDocument(
 ## Touchpoints
 
 - Read `./README.md` for contract ownership and service-side translation rules.
-- Read `../database-adapters.md` for migration, transaction, and SQL-style guidance.
+- Read `../database/README.md` for default database adapter shape.
+- Read `../database/migrations.md` for schema change guidance.
+- Read `../database/query-methods.md` for read and write method shape.
+- Read `../database/transactions.md` for multi-step database operations.

@@ -360,6 +360,7 @@ Some suites can parallelize cleanly. Others are simpler and more robust without 
 
 ## Related guides
 
-- `database-adapters.md`
+- `database/README.md`
+- `database/migrations.md`
 - `store-contracts.md`
 - `api-tests.md`

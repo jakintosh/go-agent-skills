@@ -531,4 +531,4 @@ Handler: func(i *args.Input) error {
 - `subsystems/cli-command-trees.md`
 - `subsystems/service-construction.md`
 - `subsystems/http-router-composition.md`
-- `subsystems/database-adapters.md`
+- `subsystems/database/README.md`

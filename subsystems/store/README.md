@@ -138,7 +138,7 @@ Keep the same rules in both cases:
 
 - `subsystems/service/README.md` for service package ownership and constructor shape
 - `subsystems/api-handlers/README.md` for api handler responsibilities
-- `subsystems/database-adapters.md` for SQL adapter mechanics
+- `subsystems/database/README.md` for SQL adapter mechanics
 
 ## Testing Expectations
 

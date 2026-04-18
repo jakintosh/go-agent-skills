@@ -274,4 +274,4 @@ Avoid redundant tests that change only literal data values without changing beha
 
 - `service-construction.md`
 - `http-router-composition.md`
-- `database-adapters.md`
+- `database/README.md`
