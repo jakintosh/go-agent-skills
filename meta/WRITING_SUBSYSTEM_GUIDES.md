@@ -94,10 +94,19 @@ They should:
 - assume the spine doc already defined the subsystem
 - include only the local rules and example material needed for that branch
 
+Leaf docs do not need to be only optional variants.
+
+For larger subsystems, leaf docs may also own focused execution tasks that are part of the normal workflow, as long as:
+
+- `README.md` still gives the minimum complete mental model of the subsystem
+- `README.md` remains the clear starting point
+- each leaf stays focused on one task or branch of work
+
 Use leaf docs for:
 
 - optional integrations
 - cross-subsystem integration points
+- focused execution tasks such as schema migrations, query methods, or lifecycle hooks when those topics would otherwise overload the spine doc
 
 Most leaf docs should use roughly this structure:
 
@@ -132,6 +141,8 @@ That means:
 - avoid presenting many options in the same context unless the distinction matters
 
 If a guide shows several roughly equal ways to do the same thing, it needs revision.
+
+For larger subsystems, branch reduction may mean keeping one clear spine doc while moving high-frequency task detail into separate leaf docs. The leaf split should still reduce ambiguity, not create several equal starting points.
 
 ## Instruction budgeting
 
