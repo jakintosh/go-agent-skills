@@ -137,7 +137,7 @@ Keep the same rules in both cases:
 ## Common Touchpoints
 
 - `subsystems/service/README.md` for service package ownership and constructor shape
-- `subsystems/http-resource-handlers.md` for handler responsibilities
+- `subsystems/api-handlers/README.md` for api handler responsibilities
 - `subsystems/database-adapters.md` for SQL adapter mechanics
 
 ## Testing Expectations
