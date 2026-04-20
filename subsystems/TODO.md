@@ -5,7 +5,8 @@ This document tracks the current queue of subsystem guides to write.
 ## Drafted
 
 - `http-router-composition.md`
-- `config-systems.md`
+- `config/README.md`
+- `cli/with-config.md`
 - `cli-command-trees.md`
 - `service-construction.md`
 - `api-tests.md`

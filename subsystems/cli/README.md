@@ -173,7 +173,9 @@ Use a `config` subtree when the application has:
 - resolved runtime inspection
 - config-backed resource management
 
-If these needs are not clearly defined yet, **skip this**.
+If these needs are clearly present, read `./with-config.md`.
+
+If these needs are not clearly defined yet, skip this.
 
 ---
 
@@ -184,7 +186,7 @@ Use a top-level `init` command when the application has mutable bootstrap work s
 - explicit key bootstrap
 - durable seed state
 
-If these needs are not clearly defined yet, **skip this**.
+If these needs are not clearly defined yet, skip this.
 
 ---
 

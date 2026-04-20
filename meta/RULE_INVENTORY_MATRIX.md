@@ -81,29 +81,29 @@ Capture states:
 | CLI-10 | Keep command handlers inline on the command definition unless there is a compelling readability reason otherwise. | subsystem | `subsystems/cli-command-trees.md` | default | `POLLINATOR_STYLE.md` Command handler style | repeated in resource command files | extract |
 | CLI-11 | Align CLI resource trees with API resource paths where possible. | subsystem | `subsystems/cli-command-trees.md` | default | `POLLINATOR_STYLE.md` Core principles | visible across `api` subcommands | rewrite |
 | CLI-12 | Add a top-level `init` command when the system has explicit mutable bootstrap work to perform. | subsystem | `subsystems/cli-command-trees.md` | default | `COMMAND-GO-v040-MIGRATION.md`; `CONFIG-SYSTEM-DESIGN.md` | explicit `init` flow emerging in command-go v0.4.0 | extract |
-| CLI-13 | Keep `config` as its own command subtree when the application has a real config subsystem. | subsystem | `subsystems/config-systems.md` | default | `CONFIG-SYSTEM-DESIGN.md` | config doc introduces `config init/show/resource` tree | extract |
+| CLI-13 | Keep `config` as its own command subtree when the application has a real config subsystem. | subsystem | `subsystems/cli/with-config.md` | default | `CONFIG-SYSTEM-DESIGN.md` | config doc introduces `config init/show/resource` tree | extract |
 
 ## Config systems
 
 | ID | Rule | Scope | Future Owner | Designation | Current Source | Example Signal | Capture |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| CFG-01 | Treat config as a subsystem, not a helper. | subsystem | `subsystems/config-systems.md` | required | `CONFIG-SYSTEM-DESIGN.md` | new dedicated config design doc | extract |
-| CFG-02 | Create an `internal/config` package that owns schema, defaults, validation, resolution, resources, secret loading, and bootstrap behavior. | subsystem | `subsystems/config-systems.md` | required | `CONFIG-SYSTEM-DESIGN.md` | explicit package shape | extract |
-| CFG-03 | Separate authored config from resolved runtime. | subsystem | `subsystems/config-systems.md` | required | `CONFIG-SYSTEM-DESIGN.md` | `Config` vs `Runtime` split | extract |
-| CFG-04 | Resolve precedence in one place with a clear order: defaults, config file, env, CLI overrides. | subsystem | `subsystems/config-systems.md` | required | `CONFIG-SYSTEM-DESIGN.md` | central `Resolve()` guidance | extract |
-| CFG-05 | Keep config-dir and data-dir as separate concerns. | subsystem | `subsystems/config-systems.md` | required | `CONFIG-SYSTEM-DESIGN.md` | explicit filesystem split | extract |
-| CFG-06 | Generate a runnable local baseline natively in Go rather than through shell templates. | subsystem | `subsystems/config-systems.md` | default | `CONFIG-SYSTEM-DESIGN.md` | `config init` baseline generation | extract |
-| CFG-07 | Treat config-backed resource families as first-class files rather than embedding everything into one large root config file. | subsystem | `subsystems/config-systems.md` | default | `CONFIG-SYSTEM-DESIGN.md` | resource directories and CRUD guidance | extract |
-| CFG-08 | Be non-destructive by default and require explicit force semantics for overwrites. | subsystem | `subsystems/config-systems.md` | required | `CONFIG-SYSTEM-DESIGN.md` | explicit safe-write behavior | extract |
-| CFG-09 | Provide both authored-config inspection and resolved-runtime inspection views. | subsystem | `subsystems/config-systems.md` | default | `CONFIG-SYSTEM-DESIGN.md` | `config show` and `config show --resolved` | extract |
-| CFG-10 | Separate config generation from mutable operational initialization. | subsystem | `subsystems/config-systems.md` | required | `CONFIG-SYSTEM-DESIGN.md`; `COMMAND-GO-v040-MIGRATION.md` | `config init` vs top-level `init` | extract |
-| CFG-11 | Keep root path options like `--config-dir` and `--data-dir` global so every command resolves the same environment shape. | subsystem | `subsystems/config-systems.md` | required | `CONFIG-SYSTEM-DESIGN.md` | explicit CLI shape | extract |
-| CFG-12 | `Resolve()` should be the only place that merges config file, env, CLI overrides, secrets, resources, and derived paths. | subsystem | `subsystems/config-systems.md` | required | `CONFIG-SYSTEM-DESIGN.md` | explicit single-owner model | extract |
-| CFG-13 | Keep secrets out of the main config file and support environment override first, then file fallback. | subsystem | `subsystems/config-systems.md` | required | `CONFIG-SYSTEM-DESIGN.md` | secret handling principles | extract |
-| CFG-14 | Use strict decoding and fail early on unknown or invalid config. | subsystem | `subsystems/config-systems.md` | required | `CONFIG-SYSTEM-DESIGN.md` | validation and failure philosophy | extract |
-| CFG-15 | Commands should translate CLI input into config package calls; services should consume resolved runtime, not re-open config sources. | subsystem | `subsystems/config-systems.md` | required | `CONFIG-SYSTEM-DESIGN.md` | explicit boundary rule | extract |
-| CFG-16 | Use CLI option -> env var -> default precedence for root path inputs. | subsystem | `subsystems/config-systems.md` | required | `CONFIG-SYSTEM-DESIGN.md`; `POLLINATOR_STYLE.md` | root path resolution rule | extract |
-| CFG-17 | Keep simple invocation-specific flags on the command itself, even when a full config subsystem exists. | subsystem | `subsystems/config-systems.md` | default | `CONFIG-SYSTEM-DESIGN.md` | host/port serve overrides remain command-local | extract |
+| CFG-01 | Treat config as a subsystem, not a helper. | subsystem | `subsystems/config/README.md` | required | `CONFIG-SYSTEM-DESIGN.md` | new dedicated config design doc | extract |
+| CFG-02 | Create an `internal/config` package that owns schema, defaults, validation, resolution, resources, secret loading, and bootstrap behavior. | subsystem | `subsystems/config/README.md` | required | `CONFIG-SYSTEM-DESIGN.md` | explicit package shape | extract |
+| CFG-03 | Separate authored config from resolved runtime. | subsystem | `subsystems/config/README.md` | required | `CONFIG-SYSTEM-DESIGN.md` | `Config` vs `Runtime` split | extract |
+| CFG-04 | Resolve precedence in one place with a clear order: defaults, config file, env, CLI overrides. | subsystem | `subsystems/config/runtime-resolution.md` | required | `CONFIG-SYSTEM-DESIGN.md` | central `Resolve()` guidance | extract |
+| CFG-05 | Keep config-dir and data-dir as separate concerns. | subsystem | `subsystems/config/README.md` | required | `CONFIG-SYSTEM-DESIGN.md` | explicit filesystem split | extract |
+| CFG-06 | Generate a runnable local baseline natively in Go rather than through shell templates. | subsystem | `subsystems/config/initialization.md` | default | `CONFIG-SYSTEM-DESIGN.md` | `config init` baseline generation | extract |
+| CFG-07 | Treat config-backed resource families as first-class files rather than embedding everything into one large root config file. | subsystem | `subsystems/config/resources.md` | default | `CONFIG-SYSTEM-DESIGN.md` | resource directories and CRUD guidance | extract |
+| CFG-08 | Be non-destructive by default and require explicit force semantics for overwrites. | subsystem | `subsystems/config/initialization.md` | required | `CONFIG-SYSTEM-DESIGN.md` | explicit safe-write behavior | extract |
+| CFG-09 | Provide both authored-config inspection and resolved-runtime inspection views. | subsystem | `subsystems/config/runtime-resolution.md` | default | `CONFIG-SYSTEM-DESIGN.md` | `config show` and `config show --resolved` | extract |
+| CFG-10 | Separate config generation from mutable operational initialization. | subsystem | `subsystems/config/initialization.md` | required | `CONFIG-SYSTEM-DESIGN.md`; `COMMAND-GO-v040-MIGRATION.md` | `config init` vs top-level `init` | extract |
+| CFG-11 | Keep root path options like `--config-dir` and `--data-dir` global so every command resolves the same environment shape. | subsystem | `subsystems/cli/with-config.md` | required | `CONFIG-SYSTEM-DESIGN.md` | explicit CLI shape | extract |
+| CFG-12 | `Resolve()` should be the only place that merges config file, env, CLI overrides, secrets, resources, and derived paths. | subsystem | `subsystems/config/runtime-resolution.md` | required | `CONFIG-SYSTEM-DESIGN.md` | explicit single-owner model | extract |
+| CFG-13 | Keep secrets out of the main config file and support environment override first, then file fallback. | subsystem | `subsystems/config/runtime-resolution.md` | required | `CONFIG-SYSTEM-DESIGN.md` | secret handling principles | extract |
+| CFG-14 | Use strict decoding and fail early on unknown or invalid config. | subsystem | `subsystems/config/runtime-resolution.md` | required | `CONFIG-SYSTEM-DESIGN.md` | validation and failure philosophy | extract |
+| CFG-15 | Commands should translate CLI input into config package calls; services should consume resolved runtime, not re-open config sources. | subsystem | `subsystems/config/README.md` | required | `CONFIG-SYSTEM-DESIGN.md` | explicit boundary rule | extract |
+| CFG-16 | Use CLI option -> env var -> default precedence for root path inputs. | subsystem | `subsystems/config/runtime-resolution.md` | required | `CONFIG-SYSTEM-DESIGN.md`; `POLLINATOR_STYLE.md` | root path resolution rule | extract |
+| CFG-17 | Keep simple invocation-specific flags on the command itself, even when a full config subsystem exists. | subsystem | `subsystems/cli/with-config.md` | default | `CONFIG-SYSTEM-DESIGN.md` | host/port serve overrides remain command-local | extract |
 
 ## Service construction and initialization
 
@@ -271,7 +271,7 @@ Capture states:
 | A-03 | Avoid custom JSON endpoints when HTML fragment responses already satisfy a server-rendered UI interaction. | subsystem | `subsystems/server-rendered-htmx-ui.md` | default | `FRONT_END_STYLE.md` Practical guardrails | frontend apps lean toward HTML fragments | extract |
 | A-04 | Avoid per-route ad hoc response styles and standardize around a small set of response patterns. | subsystem | `subsystems/http-resource-handlers.md` | required | `FRONT_END_STYLE.md` Practical guardrails; `POLLINATOR_STYLE.md` HTTP/API design | repeated envelope and render conventions | rewrite |
 | A-05 | Avoid giant helper APIs that hide test Arrange/Act/Assert intent. | subsystem | `subsystems/api-tests.md` | required | `API_TEST_STYLE.md` internal/testutil responsibilities | repeated guidance | keep |
-| A-06 | Do not re-implement config precedence logic in individual commands. | subsystem | `subsystems/config-systems.md` | required | `CONFIG-SYSTEM-DESIGN.md` | central `Resolve()` rule | extract |
+| A-06 | Do not re-implement config precedence logic in individual commands. | subsystem | `subsystems/cli/with-config.md` | required | `CONFIG-SYSTEM-DESIGN.md` | central `Resolve()` rule | extract |
 | A-07 | Do not bootstrap mutable auth/key state implicitly during normal `serve` startup. | subsystem | `subsystems/service-construction.md` | required | `COMMAND-GO-v040-MIGRATION.md` | explicit init flow replaces bootstrap token startup | extract |
 
 ## Early conclusions from the updated matrix

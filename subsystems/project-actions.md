@@ -127,5 +127,5 @@ The value here is not elaborate test coverage. The value is keeping the action s
 ## Related guides
 
 - `cli-command-trees.md`
-- `config-systems.md`
+- `config/README.md`
 - `service-construction.md`
