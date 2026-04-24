@@ -13,6 +13,7 @@ Use it when you are adding a read method, write method, upsert, or query with op
 - Wrap errors with operation-specific context.
 - Check `rows.Err()` after iteration.
 - Keep dynamic query construction local and readable.
+- Apply update inputs without rewriting unchanged state.
 
 ## Read Method Shape
 
@@ -151,7 +152,7 @@ func (db *DB) GetPatron(
 }
 ```
 
-## Write And Upsert Shape
+## Write, Update, And Upsert Shape
 
 Writes should keep the same direct shape: execute SQL, wrap errors, return.
 
@@ -177,6 +178,8 @@ func (db *DB) InsertDocument(
 ```
 
 Use upserts when the operation is naturally idempotent and the conflict behavior is part of the method's contract.
+
+For ordinary resource updates, accept the update-shaped input from the service contract and apply only the fields present in that input. Preserve unspecified fields and unchanged relationships. For relationship sets, prefer targeted inserts, targeted deletes, upserts, or set-diff SQL over rewriting the whole relationship when only part of it changed.
 
 ## Optional Filters
 

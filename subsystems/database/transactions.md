@@ -12,6 +12,7 @@ Use it when one operation spans multiple writes, several statements need one con
 - Keep transaction-scoped helper methods mechanical.
 - Pass `*sql.Tx` into local helpers instead of hiding transaction state globally.
 - Keep service-level validation and business policy out of the transaction body.
+- Translate storage invariant failures into meaningful adapter errors.
 
 ## Canonical Flow
 
@@ -19,7 +20,7 @@ The default transaction flow is:
 
 1. begin the transaction
 2. defer rollback
-3. run transaction-scoped SQL helpers
+3. run ordered transaction-scoped SQL helpers
 4. commit on success
 5. return the commit error if commit fails
 
@@ -73,7 +74,7 @@ func (db *DB) sqlMarkDocumentPublishedTx(
 }
 ```
 
-This keeps the public method readable while keeping transaction state explicit.
+This keeps the public method readable while keeping transaction state explicit. Prefer constraints, foreign keys, conditional writes, or a single statement when they can enforce the invariant clearly; use a transaction when several storage steps must succeed or fail together.
 
 ## Consistent Multi-Query Reads
 

@@ -17,6 +17,7 @@ The store subsystem owns:
 - Define store interfaces in `internal/service`
 - Define domain structs before defining store methods
 - Name store methods as domain operations
+- Use current domain vocabulary at the service/store boundary
 - Keep SQL, driver, and transport types out of store contracts
 - Use explicit parameter names for persistence-shaped values
 - Keep handlers free of store-specific translation work
@@ -46,8 +47,8 @@ The default flow is:
 
 1. a handler decodes request inputs and calls a service method
 2. the service validates domain inputs
-3. the service calls any domain functionality
-4. the service calls the store contract
+3. the service applies any domain functionality
+4. the service calls the store contract with domain-shaped values
 5. the database adapter implements that contract mechanically
 
 If you are implementing the adapter side of this boundary in `internal/database`, read `./with-database.md`
@@ -68,7 +69,12 @@ type Document struct {
 type Store interface {
 	InsertDocument(document *Document) error
 	GetDocument(id string) (*Document, error)
+	UpdateDocument(id string, update DocumentUpdate) (*Document, error)
 	ListDocuments(limit int, offset int) ([]Document, error)
+}
+
+type DocumentUpdate struct {
+	Title *string
 }
 
 func (s *Service) CreateDocument(
@@ -99,20 +105,24 @@ func (s *Service) CreateDocument(
 This is the default shape to preserve:
 
 - the service owns `Document`
-- the store interface uses domain operation names
+- the store interface uses current domain operation names
 - the service performs validation and conversion before the store call
+- store reads and writes return service-owned domain values when the caller needs the updated state
 
 ## More Examples
 
-Use names that describe the domain operation directly:
+Use names that describe the domain operation directly, and let transitional names, storage-era records, or redundant suffixes fall away once the domain concept is clear:
 
 ```go
 type Store interface {
 	InsertEntry(entry *Entry) error
 	GetEntry(id string) (*Entry, error)
+	UpdateEntry(id string, update EntryUpdate) (*Entry, error)
 	GetProjectSnapshot(project string, sinceUnix int64, untilUnix int64) (*Snapshot, error)
 }
 ```
+
+For ordinary resource editing, define one update-shaped input for the resource and let the store method apply the fields present in that input. Give distinct domain actions their own methods when the action has its own meaning or lifecycle.
 
 Another good shape is a domain-specific interface when the contract is intentionally split:
 
@@ -129,6 +139,7 @@ Keep the same rules in both cases:
 - methods describe domain work
 - persistence-shaped parameters are named honestly
 - domain result types stay service-owned
+- sensitive values move through explicit capabilities instead of ordinary returned struct fields
 
 ## Leaf Docs
 

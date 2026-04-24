@@ -11,6 +11,7 @@ API handlers own:
 - decoding request bodies
 - reading path and query inputs
 - validating request-local shape
+- normalizing raw request values
 - calling service methods
 - writing HTTP status codes and JSON responses
 - translating service errors into HTTP responses
@@ -20,6 +21,7 @@ Keep domain rules in service methods and persistence mechanics in store implemen
 ## Required
 
 - Keep handlers thin: decode, validate request-local shape, call the service, encode the response
+- Model resource updates as an explicit update request passed to one service method for that resource
 - Keep request and response types close to-or inside-the domain file that owns the handler
 - Keep request and response types exported so other packages can use them directly
 - Use explicit path values and query parsing in the handler
@@ -54,13 +56,15 @@ For one domain file, keep this ownership split together:
 
 The normal handler flow is:
 
-1. read path, query, or body inputs
+1. read and normalize path, query, or body inputs
 2. validate request-local shape
-3. call a service method
+3. call one service method with shaped values
 4. map service errors
 5. write the response
 
 If error mapping needs more than a simple inline check, read `./error-mapping.md`
+
+For ordinary resource edits, decode an update request, validate which fields are present and well-formed, pass the full update intent to the service, and return the updated resource when that keeps the API contract simple. Distinct endpoints can still expose distinct domain actions, but plain resource editing should have one coherent update path through the service.
 
 ## Canonical Example
 

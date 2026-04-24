@@ -10,6 +10,7 @@ Use it when you are creating the application's core service package, defining a 
 - Use a concrete `Service` struct with an explicit `Options` constructor
 - Validate required dependencies in `New(...)`
 - Keep domain behavior and closely related handlers together when they share types and validation
+- Validate domain meaning in service methods, not raw ingress formatting
 - Keep config resolution and external dependency setup outside the service package
 - Keep router composition inside the service package
 
@@ -98,7 +99,9 @@ If you need to wire production dependencies in `main` and deterministic dependen
 
 ## Domain locality
 
-Keep domain behavior and the handlers that expose it together when they share the same types and validation rules
+Keep domain behavior and the handlers that expose it together when they share the same types and validation rules.
+
+Handlers, CLI commands, config loaders, and other entry points parse and normalize request-shaped inputs before calling the service. Service methods should receive already-shaped values, validate their domain meaning, coordinate behavior, and call service-owned contracts. For example, trim raw text at the HTTP, CLI, or config boundary so the service can treat its inputs as intentional domain values.
 
 For example, `documents.go` may own:
 
@@ -107,6 +110,13 @@ For example, `documents.go` may own:
 - `CreateDocument(...)`
 - `handleListDocuments(...)`
 - `handleCreateDocument(...)`
+
+Keep service mutations readable by making their phases visible:
+
+1. validate the requested domain intent
+2. load current state when the rules depend on it
+3. apply domain rules and build the store input
+4. call the store and map errors
 
 ```go
 package service

@@ -330,11 +330,14 @@ For method-level adapter tests, cover the behaviors that actually matter for per
 - duplicate or constraint violations
 - not-found cases
 - idempotent upsert semantics
+- partial updates preserving unspecified fields
+- protected deletes and relationship constraints
+- relationship updates preserving unchanged associations
 - list ordering, limit, offset, and filter behavior
 - null scanning and conversion behavior
 - multi-step transactional effects when the method owns a transaction
 
-You do not need every category for every method. Cover the ones the method is responsible for.
+You do not need every category for every method. Cover the ones the method is responsible for, and prove database-owned invariants at the adapter boundary instead of only proving that a caller remembered to run a separate preflight check.
 
 ## Parallelism
 

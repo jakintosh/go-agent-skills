@@ -14,6 +14,7 @@ The database subsystem owns:
 - concrete implementations of service-owned store contracts
 - SQL queries, scans, and storage-format conversion
 - transaction coordination for multi-step storage work
+- durable invariants enforced by schema and storage behavior
 
 ## Required Instructions
 
@@ -26,6 +27,7 @@ The database subsystem owns:
 - Keep SQL driver types inside `internal/database`
 - Write adapter methods in the order query, scan, convert, return
 - Scan into local storage-shaped values, then build domain values explicitly
+- Enforce durable invariants at the storage boundary
 - Use transactions for multi-step writes or consistent multi-query reads
 
 ## Canonical Shape
@@ -67,6 +69,8 @@ For local SQLite services, the default setup is:
 - optional WAL when the database is file-backed
 
 If you are changing schema behavior, read `./migrations.md`. That guide keeps SQL-string migrations as the default path and links to a deeper guide when a migration needs procedural steps.
+
+Schema constraints, foreign keys, conditional statements, and transactionally coordinated writes should make invalid persistence operations fail through the adapter. Service methods can decide policy before calling the store, but the database should still protect durable state when a caller reaches the adapter directly.
 
 ## Canonical Flow
 
@@ -173,7 +177,7 @@ This is the default shape to preserve:
 - callers get a ready-to-use adapter from `Open(...)`
 - schema setup happens before the adapter is returned
 - the adapter satisfies a service-owned interface
-- method logic stays mechanical and storage-focused
+- method logic stays mechanical, storage-focused, and honest about constraint failures
 
 ## Leaf Docs
 
