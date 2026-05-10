@@ -2,16 +2,9 @@
 
 This guide defines the default shape of `internal/config`. The core philosophy is that the binary should be able to create and manage its own config, without needing to ship example config or an out-of-band manual
 
-Use this guide when the application has authored config on disk, resolved runtime state, secret loading, config-backed resources, or a native `config init` flow
+Use this guide when the application has authored config on disk, resolved runtime state, secret loading, config-backed resources, or a native `config init` flow.
 
-## Owns
-
-- authored config schema, defaults, load, save, and validation
-- derived filesystem paths from `config-dir` and `data-dir`
-- runtime resolution from config files, environment, CLI overrides, and derived paths
-- secret loading and redacted inspection output
-- native `config init` bootstrap behavior
-- config-backed resource families such as themes, templates, providers, or policies
+The config subsystem defines authored config schema, defaults, loading, saving, validation, derived filesystem paths, runtime resolution, secret loading, redacted inspection output, native `config init` behavior, and config-backed resource families such as themes, templates, providers, or policies.
 
 ## Required Instructions
 
@@ -22,7 +15,7 @@ Use this guide when the application has authored config on disk, resolved runtim
 - Track `config-dir` and `data-dir` separate, foundational inputs to the config system
 - Keep secrets out of the main config file
 - Load authored config strictly and fail on unknown or invalid fields
-- Keep commands thin and keep services consuming resolved runtime only
+- Keep commands thin and keep the serving stack consuming resolved runtime only
 - Provide both authored and resolved inspection paths
 - Make generated writes non-destructive by default
 - Store config-backed resource families as files under the config directory
@@ -62,8 +55,9 @@ The default runtime flow is:
 
 1. a command forwards raw root-path inputs and invocation-specific overrides to `internal/config`
 2. `Resolve(...)` resolves config paths, loads authored config, merges environment and CLI overrides, loads secrets and resources, and derives runtime-only values
-3. the command opens other dependencies from `Runtime` and constructs the service
-4. the service consumes resolved runtime values and does not re-open config files, environment variables, or secret files
+3. the command passes `Runtime` into `internal/server`
+4. the server opens other dependencies from `Runtime` and constructs service/API packages
+5. service and API packages consume ready-to-use dependencies and do not re-open config files, environment variables, or secret files
 
 ## Canonical Example
 
@@ -103,7 +97,10 @@ type Runtime struct {
 	Themes     map[string]Theme
 }
 
-func ResolvePaths(configDir string, dataDir string) Paths {
+func ResolvePaths(
+	configDir string,
+	dataDir string,
+) Paths {
 	resolvedConfigDir := ResolveConfigDir(configDir)
 	resolvedDataDir := ResolveDataDir(dataDir)
 
@@ -180,5 +177,6 @@ This is the default shape to preserve:
 
 - `subsystems/cli/README.md` for command tree shape
 - `subsystems/cli/with-config.md` for CLI wiring and `config` subcommands
+- `subsystems/server/README.md` for serving composition
 - `subsystems/service/README.md` for service construction boundaries
 - `subsystems/service/bootstrap-initialization.md` for top-level mutable initialization outside `config init`

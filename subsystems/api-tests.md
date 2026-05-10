@@ -2,7 +2,7 @@
 
 This guide defines the standard shape for HTTP API tests in this style system.
 
-It focuses on in-process tests at the router and service boundary, the role of `internal/testutil`, and the test structure that keeps behavior obvious at a glance.
+It focuses on in-process tests at the API router boundary, the role of `internal/testutil`, and the test structure that keeps behavior obvious at a glance.
 
 The goal is to make API tests:
 
@@ -15,7 +15,7 @@ The goal is to make API tests:
 
 Use this guide when you are:
 
-- writing tests for HTTP handlers or router behavior
+- writing tests for HTTP handlers or API router behavior
 - building `internal/testutil`
 - deciding how much setup should be hidden in helpers
 - adding middleware, auth, validation, or response-contract coverage
@@ -38,6 +38,8 @@ This guide does not define:
 - Keep setup deterministic and local.
 - Prefer in-process router tests over real network listeners.
 - Use `internal/testutil` as the test composition root.
+- Build the service and API in test setup, then exercise the API through `env.Router`.
+- Use exported `internal/api` DTOs for response assertions.
 - Let `internal/testutil` own lifecycle and cleanup.
 - Keep seed helpers deterministic and explicit about scenario intent.
 - Allow scenario helpers for setup mechanics, but do not let them hide assertions.
@@ -55,22 +57,22 @@ These tests should verify the HTTP contract a caller can observe, including:
 - response envelope and payload shape
 - state transitions across requests
 
-They are not the right place to inspect private service fields or internal helper behavior directly.
+They are not the right place to inspect private service fields or internal API helper behavior directly.
 
 ## `internal/testutil` boundary
 
 `internal/testutil` is the composition root for API tests.
 
-It should own:
+Keep these responsibilities in `internal/testutil`:
 
 - environment setup such as `SetupTestEnv(t)`
-- deterministic dependency wiring
+- deterministic dependency wiring for service and API
 - lifecycle cleanup through `t.Cleanup()`
 - small shared header helpers
 - domain seed helpers
 - narrow scenario setup helpers for multi-step arrangements
 
-It should not own:
+Keep these responsibilities in the tests themselves:
 
 - endpoint assertions
 - one-call mega helpers that seed half the application
@@ -85,24 +87,38 @@ Expose only what tests need regularly.
 type TestEnv struct {
 	DB      *database.DB
 	Service *service.Service
+	Router  http.Handler
 }
 
-func SetupTestEnv(t *testing.T) *TestEnv {
+func SetupTestEnv(
+	t *testing.T,
+) *TestEnv {
 	t.Helper()
 
-	db, err := database.Open(database.Options{
+	dbOpts := database.Options{
 		Path: ":memory:",
-	})
+	}
+	db, err := database.Open(dbOpts)
 	if err != nil {
 		t.Fatalf("open test db: %v", err)
 	}
 
-	svc, err := service.New(service.Options{
+	svcOpts := service.Options{
 		Store: db,
 		Clock: fixedClock,
-	})
+	}
+	svc, err := service.New(svcOpts)
 	if err != nil {
 		t.Fatalf("create service: %v", err)
+	}
+
+	apiOpts := api.Options{
+		Service: svc,
+		Keys:    db.KeysStore,
+	}
+	apiServer, err := api.New(apiOpts)
+	if err != nil {
+		t.Fatalf("create api: %v", err)
 	}
 
 	t.Cleanup(func() {
@@ -112,6 +128,7 @@ func SetupTestEnv(t *testing.T) *TestEnv {
 	return &TestEnv{
 		DB:      db,
 		Service: svc,
+		Router:  apiServer.Router(),
 	}
 }
 ```
@@ -123,7 +140,10 @@ The test environment should be deterministic, short-lived, and easy to understan
 Seed helpers should encode scenario intent clearly:
 
 ```go
-func SeedDocuments(t *testing.T, svc *service.Service) {
+func SeedDocuments(
+	t *testing.T,
+	svc *service.Service,
+) {
 	t.Helper()
 
 	if err := svc.CreateDocument("doc-1", "Guide A"); err != nil {
@@ -152,19 +172,20 @@ Every API test should follow the same visible flow:
 Use explicit chunk comments so the flow is obvious on a quick skim.
 
 ```go
-func TestAPICreateDocument_Success(t *testing.T) {
+func TestAPICreateDocument_Success(
+	t *testing.T,
+) {
 	// setup env
 	env := testutil.SetupTestEnv(t)
-	router := env.Service.BuildRouter()
 
 	// post document
-	url := "/api/v1/documents"
+	url := "/documents"
 	body := `{"id":"doc-1","title":"Guide A"}`
 	headers := []wire.TestHeader{
 		testutil.JSONHeader,
 		testutil.AuthHeader,
 	}
-	result := wire.TestPost[service.Document](t, router, url, body, headers...)
+	result := wire.TestPost[api.DocumentDTO](t, env.Router, url, body, headers...)
 
 	// verify result
 	result.ExpectStatus(t, http.StatusCreated)
@@ -205,7 +226,7 @@ Avoid hiding request construction in large helpers.
 Assert in this order:
 
 1. status code
-2. payload or error contract
+2. payload or error contract using API DTOs
 3. side effects
 
 This ordering matches how a client experiences the API and makes failures easier to diagnose quickly.
@@ -272,6 +293,6 @@ Avoid redundant tests that change only literal data values without changing beha
 
 ## Related guides
 
-- `service-construction.md`
-- `http-router-composition.md`
+- `api/README.md`
+- `server/composition-roots.md`
 - `database/README.md`

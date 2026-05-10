@@ -20,7 +20,7 @@ The default CLI flow is:
 2. `config init` calls `config.Init(...)`
 3. `config show` calls `config.Load(...)`
 4. `config show --resolved` calls `config.Resolve(...)`
-5. runtime commands such as `serve` call `config.Resolve(...)` and pass `Runtime` into other constructors
+5. runtime commands such as `serve` call `config.Resolve(...)` and pass `Runtime` into `internal/server`
 
 ## Focused Example
 
@@ -64,12 +64,15 @@ var configShowCommand = &args.Command{
 			Help: "show resolved runtime values",
 		},
 	},
-	Handler: func(i *args.Input) error {
+	Handler: func(
+		i *args.Input,
+	) error {
 		configDir := i.GetParameterOr("config-dir", "")
 		dataDir := i.GetParameterOr("data-dir", "")
 
 		if i.GetFlag("resolved") {
-			runtime, err := config.Resolve(configDir, dataDir, config.Overrides{})
+			overrides := config.Overrides{}
+			runtime, err := config.Resolve(configDir, dataDir, overrides)
 			if err != nil {
 				return err
 			}
@@ -98,29 +101,26 @@ var serveCommand = &args.Command{
 			Help: "override server port",
 		},
 	},
-	Handler: func(i *args.Input) error {
+	Handler: func(
+		i *args.Input,
+	) error {
+		overrides := config.Overrides{
+			Host: i.GetParameter("host"),
+			Port: i.GetIntParameter("port"),
+		}
 		runtime, err := config.Resolve(
 			i.GetParameterOr("config-dir", ""),
 			i.GetParameterOr("data-dir", ""),
-			config.Overrides{
-				Host: i.GetParameter("host"),
-				Port: i.GetIntParameter("port"),
-			},
+			overrides,
 		)
 		if err != nil {
 			return err
 		}
 
-		svc, err := service.New(service.Options{
-			DatabasePath: runtime.DatabasePath,
-			SigningKey:   runtime.SigningKey,
-			Themes:       runtime.Themes,
-		})
-		if err != nil {
-			return err
+		serverOpts := server.Options{
+			Runtime: runtime,
 		}
-
-		return svc.Serve(runtime.Host, runtime.Port)
+		return server.Serve(serverOpts)
 	},
 }
 ```
@@ -131,3 +131,4 @@ This is the default shape to preserve:
 - the `config` subtree owns config material and inspection
 - runtime commands keep only command-local overrides
 - handlers call into `internal/config` instead of reimplementing precedence rules
+- serve handlers delegate serving composition to `internal/server`

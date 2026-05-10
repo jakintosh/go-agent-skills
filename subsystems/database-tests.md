@@ -96,14 +96,14 @@ For `internal/database` and similar internal subsystems, `internal/testutil` is 
 
 For public packages such as `pkg/mylib`, same-directory `_test.go` helpers are the normal shared helper location. If only one test file needs the helper, keep it file-local instead of inventing a wider helper layer.
 
-In both cases, helpers may own:
+In both cases, helpers are a good home for:
 
 - opening an isolated test database
 - cleanup
 - deterministic seed helpers
 - reusable test-only dates, tokens, or fixture values
 
-They should not own:
+Keep these responsibilities in the tests themselves:
 
 - the adapter call being tested
 - assertions about returned records
@@ -365,5 +365,5 @@ Some suites can parallelize cleanly. Others are simpler and more robust without 
 
 - `database/README.md`
 - `database/migrations.md`
-- `store-contracts.md`
+- `store/README.md`
 - `api-tests.md`

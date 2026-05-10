@@ -14,8 +14,8 @@ This directory is a brief index of the architectural guides used across the styl
 
 - [`server-rendered-htmx-ui.md`](./server-rendered-htmx-ui.md): This is the guide for building server-rendered HTMX interfaces and their application boundaries.
 
-- [`api-handlers/README.md`](./api-handlers/README.md): Use the API handlers family for JSON HTTP endpoint structure, keeping request parsing, service calls, and HTTP responses in the right place.
-  - [`api-handlers/error-mapping.md`](./api-handlers/error-mapping.md): Read this when several handlers need the same service-to-HTTP error translation rules.
+- [`api/README.md`](./api/README.md): Use the API family for JSON HTTP endpoint structure, API DTOs, route composition, service calls, and HTTP responses.
+  - [`api/error-mapping.md`](./api/error-mapping.md): Read this when handlers need consistent service-to-HTTP error translation rules.
 
 - [`cli/README.md`](./cli/README.md): Use the CLI family for command-tree structure, especially when a binary exposes multiple operational surfaces.
   - [`cli/with-config.md`](./cli/with-config.md): Read this when CLI commands need root path flags, runtime config loading, or a `config` command subtree.
@@ -34,15 +34,15 @@ This directory is a brief index of the architectural guides used across the styl
   - [`database/transactions.md`](./database/transactions.md): Read this when one persistence operation needs transactional coordination across several statements.
 
 - [`routing/README.md`](./routing/README.md): Use the routing family for composing one HTTP route tree from smaller mountable route groups.
-  - [`routing/deployment-mounting.md`](./routing/deployment-mounting.md): Read this when routes need to live under a deployment base path or separate serving layer.
   - [`routing/middleware-boundaries.md`](./routing/middleware-boundaries.md): Read this when deciding where auth, CORS, or similar middleware should wrap a subtree.
   - [`routing/mounting-package-handlers.md`](./routing/mounting-package-handlers.md): Read this when an existing package already exposes a handler that should be mounted directly.
 
-- [`service/README.md`](./service/README.md): Use the service family for the core `internal/service` package, constructor shape, dependency boundaries, and router ownership.
+- [`server/README.md`](./server/README.md): Use the server family for production serving composition, dependency opening, route-tree mounting, listen behavior, and deployment base paths.
+  - [`server/composition-roots.md`](./server/composition-roots.md): Read this when production wiring and test wiring need separate composition roots.
+
+- [`service/README.md`](./service/README.md): Use the service family for the core `internal/service` package, constructor shape, domain behavior, store contracts, and dependency boundaries.
   - [`service/bootstrap-initialization.md`](./service/bootstrap-initialization.md): Read this when startup must explicitly initialize durable application state.
-  - [`service/composition-roots.md`](./service/composition-roots.md): Read this when production wiring and test wiring need separate composition roots.
   - [`service/lifecycle-hooks.md`](./service/lifecycle-hooks.md): Read this when the service owns long-lived background work or coordinated startup and shutdown hooks.
-  - [`service/serving.md`](./service/serving.md): Read this when the service also owns HTTP serving behavior such as listen, shutdown, or base-path mounting.
 
 - [`store/README.md`](./store/README.md): Use the store family for the service-owned persistence contract between domain code and adapters.
   - [`store/with-database.md`](./store/with-database.md): Read this when implementing those store contracts inside `internal/database`.

@@ -18,18 +18,18 @@ Add an explicit initialization path when the application needs durable setup suc
 - database schema creation
 - key or auth bootstrap state
 - seed records required for first use
-- API-side initialization that should not happen on every startup
+- API-adjacent initialization, such as key bootstrap state, that should not happen on every startup
 
-This work belongs in a dedicated top-level path such as `<app> init`, not inside `New(...)` or routine `Serve(...)` startup
+This work belongs in a dedicated top-level path such as `<app> init`, not inside `New(...)` or routine `server.Serve(...)` startup
 
 ## Canonical flow
 
 The default initialization flow is:
 
-1. outer layer opens the required dependencies
-2. outer layer constructs the service with explicit options
-3. the service runs one explicit initialization method
-4. the method treats already-initialized state as success when repetition is safe
+1. outer layer resolves config
+2. outer layer opens the dependencies needed for initialization
+3. outer layer calls one explicit service initialization function or method
+4. the function treats already-initialized state as success when repetition is safe
 
 ```go
 func runInit() error {
@@ -48,16 +48,10 @@ func runInit() error {
 	}
 	defer store.Close()
 
-	opts := service.Options{
+	initOpts := service.InitOptions{
 		Store: store,
-		Clock: time.Now,
 	}
-	svc, err := service.New(opts)
-	if err != nil {
-		return err
-	}
-
-	return svc.Initialize()
+	return service.Init(initOpts)
 }
 ```
 
@@ -66,12 +60,18 @@ func runInit() error {
 Keep the initialization method focused on one-time mutable setup
 
 ```go
-func (s *Service) Initialize() error {
-	if err := s.store.CreateSchema(); err != nil {
+func Init(
+	opts InitOptions,
+) error {
+	if opts.Store == nil {
+		return errors.New("service: store required")
+	}
+
+	if err := opts.Store.CreateSchema(); err != nil {
 		return err
 	}
 
-	if err := s.ensureAdminKeyspace(); err != nil {
+	if err := ensureAdminKeyspace(opts.Store); err != nil {
 		return err
 	}
 
@@ -82,8 +82,8 @@ func (s *Service) Initialize() error {
 The important boundary is simple:
 
 - `New(...)` constructs the service
-- `Initialize()` performs explicit mutable setup
-- `Serve(...)` starts normal runtime behavior
+- `Init(...)` or another explicit initialization entry point performs mutable setup
+- `server.Serve(...)` starts normal runtime behavior
 
 ## Declared bootstrap constants
 
@@ -113,4 +113,4 @@ Initialization tests should make it easy to verify:
 
 - initialization performs required durable setup
 - repeated safe runs succeed when the state is already initialized
-- normal service construction does not perform the same work implicitly
+- normal service construction and normal server startup do not perform the same work implicitly

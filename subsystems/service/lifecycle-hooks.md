@@ -20,7 +20,7 @@ Good reasons to add lifecycle hooks include:
 - background refreshers
 - metrics or health goroutines that need coordinated shutdown
 
-If the service only handles in-process request/response behavior, a constructor plus router or serving entry point is usually enough
+If the service only handles request/response domain behavior, a constructor is usually enough. HTTP routing belongs in `internal/api`, and process serving belongs in `internal/server`.
 
 ## Canonical shape
 
@@ -33,7 +33,9 @@ type Service struct {
 	wg     sync.WaitGroup
 }
 
-func (s *Service) Start(ctx context.Context) error {
+func (s *Service) Start(
+	ctx context.Context,
+) error {
 	ctx, cancel := context.WithCancel(ctx)
 	s.cancel = cancel
 
@@ -62,29 +64,47 @@ The lifecycle boundary should stay obvious:
 - `Start(...)` begins background work
 - `Stop()` shuts that work down cleanly
 
-## Outer-layer usage
+## Server Usage
 
-The outer layer should own process lifetime and call lifecycle hooks explicitly
+The server package should own process lifetime and call lifecycle hooks explicitly when it constructs the service.
 
 ```go
-func run() error {
-	opts := service.Options{
-		Store: store,
-		Clock: time.Now,
+func Serve(
+	ctx context.Context,
+	opts server.Options,
+) error {
+	dbOpts := database.Options{
+		Path: opts.Runtime.Paths.DatabaseFile,
 	}
-	svc, err := service.New(opts)
+	db, err := database.Open(dbOpts)
 	if err != nil {
 		return err
 	}
+	defer db.Close()
 
-	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
-	defer stop()
+	svcOpts := service.Options{
+		Store: db,
+		Clock: time.Now,
+	}
+	svc, err := service.New(svcOpts)
+	if err != nil {
+		return err
+	}
 
 	if err := svc.Start(ctx); err != nil {
 		return err
 	}
 	defer svc.Stop()
 
-	return svc.Serve(host, port, basePath)
+	apiOpts := api.Options{
+		Service: svc,
+		Keys:    db.KeysStore,
+	}
+	apiServer, err := api.New(apiOpts)
+	if err != nil {
+		return err
+	}
+
+	return serveHTTP(ctx, opts.Runtime.Server.ListenAddress, apiServer.Router())
 }
 ```

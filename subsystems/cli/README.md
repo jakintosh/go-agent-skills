@@ -10,7 +10,7 @@ The goal is to make the CLI:
 
 - easy to scan, easy to extend
 - consistent about config and environment resolution
-- aligned with the service and API surface it controls
+- aligned with the service, API, and server surfaces it controls
 
 ## Package layout
 
@@ -78,7 +78,7 @@ func main() {
 	- `OptionTypeArray`: options with multiple associated values
 	- `OptionTypeFlag`: options that are boolean (true/false)
 - Keep command handlers inline on the command definition
-- Handlers should not contain any business logic, and should only convert CLI context into core domain service calls
+- Handlers should not contain any business logic, and should only convert CLI context into config, server, client, or core domain service calls
 - Use `input.GetOperand(<name>)` to parse mandatory operand values
 - Use the most relevant option parser:
 	- `GetParameter()/GetIntParameter()`: gets string/int value or `nil` if not found
@@ -207,6 +207,8 @@ For example:
 ```
 
 This works best when the CLI shape mirrors the service's resource vocabulary and, when reasonable, the HTTP resource paths as well.
+
+For `serve`, prefer resolving runtime config and delegating serving composition to `internal/server` rather than constructing service/API packages in the command handler.
 
 ## Small helpers
 

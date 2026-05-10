@@ -8,7 +8,7 @@ Use it when you need to decide whether auth, CORS, or similar behavior should wr
 
 - Apply middleware at the highest safe boundary.
 - Distinguish handler-level wrappers from handlerfunc-level wrappers.
-- Build middleware bundles from service dependencies during router composition.
+- Build middleware bundles from API dependencies during router composition.
 - Keep the applied protection obvious at the registration site.
 
 ## Local shape
@@ -27,13 +27,13 @@ type Middleware struct {
 Use handler-level wrappers when the whole mounted group shares one boundary:
 
 ```go
-wire.Subrouter(root, "/admin", mw.auth(s.buildAdminRouter(mw), &PermissionAdmin))
+wire.Subrouter(root, "/admin", mw.auth(a.buildAdminRouter(mw), &service.PermissionAdmin))
 ```
 
 Use func-level wrappers when the boundary belongs to one direct route inside a local group:
 
 ```go
-mux.HandleFunc("POST /", mw.authFunc(s.handleCreateDocument, &PermissionWrite))
+mux.HandleFunc("POST /", mw.authFunc(a.handleCreateDocument, &service.PermissionWrite))
 ```
 
 This keeps the composition code easy to scan:
@@ -44,24 +44,26 @@ This keeps the composition code easy to scan:
 ## Focused example
 
 ```go
-func (s *Service) BuildRouter() http.Handler {
+func (a *API) Router() http.Handler {
 	mw := Middleware{
-		auth:     s.keys.WithAuth,
-		authFunc: s.keys.WithAuthFunc,
-		cors:     s.cors.WithCORS,
-		corsFunc: s.cors.WithCORSFunc,
+		auth:     a.keys.WithAuth,
+		authFunc: a.keys.WithAuthFunc,
+		cors:     a.cors.WithCORS,
+		corsFunc: a.cors.WithCORSFunc,
 	}
 
 	root := http.NewServeMux()
-	wire.Subrouter(root, "/documents", s.buildDocumentRouter(mw))
-	wire.Subrouter(root, "/settings", mw.auth(s.buildSettingsRouter(mw), &PermissionAdmin))
+	wire.Subrouter(root, "/documents", a.buildDocumentRouter(mw))
+	wire.Subrouter(root, "/settings", mw.auth(a.buildSettingsRouter(mw), &service.PermissionAdmin))
 	return root
 }
 
-func (s *Service) buildDocumentRouter(mw Middleware) http.Handler {
+func (a *API) buildDocumentRouter(
+	mw Middleware,
+) http.Handler {
 	mux := http.NewServeMux()
-	mux.HandleFunc("GET /", mw.corsFunc(s.handleListDocuments))
-	mux.HandleFunc("POST /", mw.authFunc(s.handleCreateDocument, &PermissionWrite))
+	mux.HandleFunc("GET /", mw.corsFunc(a.handleListDocuments))
+	mux.HandleFunc("POST /", mw.authFunc(a.handleCreateDocument, &service.PermissionWrite))
 	return mux
 }
 ```

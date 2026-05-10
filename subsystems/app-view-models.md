@@ -27,6 +27,7 @@ This guide does not define:
 - HTMX request-flow behavior
 - HTTP routing or handler structure in detail
 - domain service rules
+- JSON API DTOs or API response contracts
 - CSS or client-side enhancement code
 
 ## Core rules
@@ -49,6 +50,8 @@ It should answer presentation questions such as:
 - what formatted string should appear for a date or status?
 
 It should not be a raw copy of the domain entity just because that is convenient.
+
+View models are separate from API DTOs. View models belong to the server-rendered UI boundary, while API DTOs belong in `internal/api`.
 
 ## Presentation-module boundary
 
@@ -86,7 +89,9 @@ type ProjectRowView struct {
 	UpdatedText string
 }
 
-func NewProjectRowView(project service.Project) ProjectRowView {
+func NewProjectRowView(
+	project service.Project,
+) ProjectRowView {
 	return ProjectRowView{
 		ID:          project.ID,
 		Name:        project.Name,
@@ -192,4 +197,5 @@ Focused mapping tests are often more valuable here than large template-output sn
 ## Related guides
 
 - `server-rendered-htmx-ui.md`
-- `service-construction.md`
+- `service/README.md`
+- `api/README.md`

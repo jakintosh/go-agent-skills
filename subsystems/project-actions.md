@@ -126,6 +126,6 @@ The value here is not elaborate test coverage. The value is keeping the action s
 
 ## Related guides
 
-- `cli-command-trees.md`
+- `cli/README.md`
 - `config/README.md`
-- `service-construction.md`
+- `service/README.md`

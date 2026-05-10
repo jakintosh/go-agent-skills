@@ -178,4 +178,5 @@ Tests should reinforce that the exported API is intentional and supportable.
 
 ## Related guides
 
-- `service-construction.md`
+- `service/README.md`
+- `api/README.md`

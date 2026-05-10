@@ -1,42 +1,47 @@
 # Defining a Service
 
-This guide defines the default shape of an `internal/service` package
+This guide defines the default shape of an `internal/service` package.
 
-Use it when you are creating the application's core service package, defining a `Service` constructor, or deciding what belongs inside the application's main behavioral boundary
+Use it when you are creating the application's core domain package, defining a `Service` constructor, or deciding what belongs inside the application's main behavioral boundary.
+
+The service package is the domain behavior boundary for the project. It defines domain behavior, domain types, service errors, service-owned store contracts, permission declarations, and explicit bootstrap or lifecycle hooks when the domain needs them. Pair this guide with `../api/README.md` for HTTP contracts and `../server/README.md` for production serving composition.
 
 ## Required
 
-- Treat `internal/service` as the application core
-- Use a concrete `Service` struct with an explicit `Options` constructor
-- Validate required dependencies in `New(...)`
-- Keep domain behavior and closely related handlers together when they share types and validation
-- Validate domain meaning in service methods, not raw ingress formatting
-- Keep config resolution and external dependency setup outside the service package
-- Keep router composition inside the service package
+- Treat `internal/service` as the application core.
+- Use a concrete `Service` struct with an explicit `Options` constructor.
+- Validate required dependencies in `New(...)`.
+- Keep domain behavior and domain types together.
+- Validate domain meaning in service methods, not raw ingress formatting.
+- Keep config resolution and external dependency setup outside the service package.
+- Define store interfaces in `internal/service`.
+- Keep service types separate from API DTOs.
+- Keep permission constants in `internal/service` when they express domain authorization.
+- Keep HTTP handlers, route composition, listen behavior, and deployment mounting in the API or server layer.
 
-## Canonical package shape
+## Canonical Package Shape
 
 Use a layout like:
 
-```
+```text
 internal/service/
   service.go
-  router.go
   store.go
-  health.go
+  errors.go
+  permissions.go
   documents.go
 ```
 
 The exact filenames may vary. The ownership split should stay clear:
 
-- `service.go` owns `Service`, `Options`, and `New(...)`
-- `router.go` owns `BuildRouter()`
-- `store.go` owns service-facing contracts
-- domain files own one coherent domain area each
+- `service.go` owns `Service`, `Options`, and `New(...)`.
+- `store.go` owns service-facing persistence contracts.
+- `errors.go` owns service errors.
+- domain files own one coherent domain area each.
 
-## Constructor pattern
+## Constructor Pattern
 
-Use `Options` to name the service's real dependencies directly
+Use `Options` to name the service's real dependencies directly.
 
 ```go
 package service
@@ -44,13 +49,12 @@ package service
 import (
 	"errors"
 	"log"
-	"net/http"
 	"time"
 )
 
 type Store interface {
-	ListDocuments() ([]Document, error)
-	CreateDocument(title string) (Document, error)
+	ListDocuments(limit int, offset int) ([]Document, error)
+	CreateDocument(document *Document) error
 }
 
 type Options struct {
@@ -65,12 +69,17 @@ type Service struct {
 	log   *log.Logger
 }
 
-func New(opts Options) (*Service, error) {
+func New(
+	opts Options,
+) (
+	*Service,
+	error,
+) {
 	if opts.Store == nil {
-		return nil, errors.New("store is required")
+		return nil, errors.New("service: store required")
 	}
 	if opts.Clock == nil {
-		return nil, errors.New("clock is required")
+		return nil, errors.New("service: clock required")
 	}
 
 	return &Service{
@@ -79,124 +88,119 @@ func New(opts Options) (*Service, error) {
 		log:   opts.Logger,
 	}, nil
 }
-
-func (s *Service) BuildRouter() http.Handler {
-	mux := http.NewServeMux()
-	mux.HandleFunc("GET /health", s.handleHealth)
-	mux.HandleFunc("GET /documents", s.handleListDocuments)
-	mux.HandleFunc("POST /documents", s.handleCreateDocument)
-	return mux
-}
 ```
 
 This keeps the constructor honest:
 
 - outer layers provide dependencies
 - `New(...)` validates them early
-- the constructed service is ready to use immediately
+- the constructed service is ready for domain use immediately
 
-If you need to wire production dependencies in `main` and deterministic dependencies in tests, read `./composition-roots.md`
+## Domain Locality
 
-## Domain locality
+Keep domain behavior, domain types, store-facing update types, and validation rules together.
 
-Keep domain behavior and the handlers that expose it together when they share the same types and validation rules.
-
-Handlers, CLI commands, config loaders, and other entry points parse and normalize request-shaped inputs before calling the service. Service methods should receive already-shaped values, validate their domain meaning, coordinate behavior, and call service-owned contracts. For example, trim raw text at the HTTP, CLI, or config boundary so the service can treat its inputs as intentional domain values.
+API handlers, CLI commands, config loaders, and other entry points parse and normalize request-shaped inputs before calling the service. Service methods should receive already-shaped values, validate their domain meaning, coordinate behavior, and call service-owned contracts. For example, trim raw text at the HTTP, CLI, or config boundary so the service can treat its inputs as intentional domain values.
 
 For example, `documents.go` may own:
 
 - `Document`
-- `CreateDocumentRequest`
+- `DocumentUpdate`
 - `CreateDocument(...)`
-- `handleListDocuments(...)`
-- `handleCreateDocument(...)`
+- `GetDocument(...)`
+- `ListDocuments(...)`
+- document-specific validation helpers
 
 Keep service mutations readable by making their phases visible:
 
 1. validate the requested domain intent
 2. load current state when the rules depend on it
 3. apply domain rules and build the store input
-4. call the store and map errors
+4. call the store and map persistence failures to service errors
 
 ```go
 package service
 
 import (
-	"encoding/json"
-	"net/http"
+	"errors"
+	"time"
+)
+
+var (
+	ErrInvalidDocument = errors.New("invalid document")
+	ErrDocumentExists  = errors.New("document already exists")
 )
 
 type Document struct {
-	ID    string `json:"id"`
-	Title string `json:"title"`
+	ID        string
+	Title     string
+	CreatedAt time.Time
 }
 
-type CreateDocumentRequest struct {
-	Title string
+type DocumentUpdate struct {
+	Title *string
 }
 
-func (s *Service) CreateDocument(title string) (Document, error) {
-	return s.store.CreateDocument(title)
-}
-
-func (s *Service) handleListDocuments(w http.ResponseWriter, r *http.Request) {
-	docs, err := s.store.ListDocuments()
-	if err != nil {
-		http.Error(w, "failed to list documents", http.StatusInternalServerError)
-		return
+func (s *Service) CreateDocument(
+	id string,
+	title string,
+) (
+	*Document,
+	error,
+) {
+	if id == "" || title == "" {
+		return nil, ErrInvalidDocument
 	}
 
-	_ = json.NewEncoder(w).Encode(docs)
-}
-
-func (s *Service) handleCreateDocument(w http.ResponseWriter, r *http.Request) {
-	var input CreateDocumentRequest
-	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
-		http.Error(w, "invalid request", http.StatusBadRequest)
-		return
+	doc := &Document{
+		ID:        id,
+		Title:     title,
+		CreatedAt: s.clock(),
+	}
+	if err := s.store.CreateDocument(doc); err != nil {
+		return nil, mapStoreDocumentError(err)
 	}
 
-	doc, err := s.CreateDocument(input.Title)
-	if err != nil {
-		http.Error(w, "failed to create document", http.StatusInternalServerError)
-		return
-	}
-
-	w.WriteHeader(http.StatusCreated)
-	_ = json.NewEncoder(w).Encode(doc)
+	return doc, nil
 }
 ```
 
-Split a domain across more files only when that domain stops being easy to read in one place
+Split a domain across more files only when that domain stops being easy to read in one place.
 
-## Default flow
+## DTO Boundary
+
+Do not treat service domain types as the API contract. `internal/api` should define exported DTOs and explicit conversions to and from service types.
+
+Service types should express the domain in Go terms. API DTOs should express the HTTP contract with JSON tags and transport-shaped names.
+
+## Default Flow
 
 The normal runtime flow is:
 
-1. an outer layer resolves config and opens dependencies
-2. the outer layer constructs `Service` with explicit `Options`
-3. the service builds its router internally
-4. an outer layer serves that router or exposes another top-level entry point
+1. `internal/server` or another outer layer resolves config and opens dependencies.
+2. the outer layer constructs `service.Service` with explicit `Options`.
+3. the outer layer constructs `api.API` with the service and API-specific dependencies.
+4. `internal/server` mounts the API router and any other HTTP surfaces.
+5. `internal/server` owns listen, shutdown, and deployment mounting.
 
-Keep that flow simple by making `internal/service` the core application boundary
+Keep that flow simple by making `internal/service` the core behavior boundary, not the HTTP boundary.
 
-If your service exposes HTTP directly and you need to define what `Serve(...)` should own, read `./serving.md`
+## Optional Branches
 
-## Optional branches
+Some services need additional structure beyond the default path.
 
-Some services need additional structure beyond the default path
+- If startup must initialize durable mutable state explicitly, read `./bootstrap-initialization.md`.
+- If the service owns long-lived background work, read `./lifecycle-hooks.md`.
+- If you need JSON HTTP endpoint structure, read `../api/README.md`.
+- If you need production serving composition, read `../server/README.md`.
 
-- If you need separate production and test wiring, read `./composition-roots.md`
-- If startup must initialize durable mutable state explicitly, read `./bootstrap-initialization.md`
-- If the service owns long-lived background work, read `./lifecycle-hooks.md`
-- If the service exposes HTTP serving concerns such as base-path mounting or listen/shutdown behavior, read `./serving.md`
-
-## Testing expectations
+## Testing Expectations
 
 At minimum, tests should make it easy to verify:
 
 - required dependency validation in `New(...)`
 - deterministic construction with test-owned dependencies
-- domain behavior without reaching through unrelated outer layers
+- domain behavior without reaching through API or server layers
+- service errors before they are translated into HTTP responses
 
-Keep more specialized tests with the feature that introduces them. For example, test bootstrap idempotency alongside explicit initialization, and test shutdown coordination alongside lifecycle hooks
+Keep API contract tests in the API test suite, using `internal/api` DTOs and the API router.

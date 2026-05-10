@@ -4,16 +4,18 @@ This document tracks the current queue of subsystem guides to write.
 
 ## Drafted
 
-- `http-router-composition.md`
+- `routing/README.md`
 - `config/README.md`
 - `cli/with-config.md`
-- `cli-command-trees.md`
-- `service-construction.md`
+- `cli/README.md`
+- `service/README.md`
+- `api/README.md`
+- `server/README.md`
 - `api-tests.md`
 - `public-packages.md`
-- `store-contracts.md`
-- `http-resource-handlers.md`
-- `database-adapters.md`
+- `store/README.md`
+- `api/README.md`
+- `database/README.md`
 - `database-tests.md`
 - `project-actions.md`
 - `server-rendered-htmx-ui.md`

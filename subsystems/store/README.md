@@ -2,15 +2,9 @@
 
 This guide defines the default shape for store contracts between `internal/service` and persistence adapters
 
-Use it when you are defining `Store` or `<Domain>Store`, deciding what belongs in `internal/service` versus `internal/database`, or deciding where domain values should be converted into persistence-shaped values
+Use it when you are defining `Store` or `<Domain>Store`, deciding what belongs in `internal/service` versus `internal/database`, or deciding where domain values should be converted into persistence-shaped values.
 
-## Owns
-
-The store subsystem owns:
-
-- the service-owned persistence contract
-- the domain vocabulary used by persistence operations
-- the boundary where service code converts rich domain values into persistence-shaped values
+The store contract is the service-owned persistence boundary. It uses domain vocabulary for persistence operations and keeps service-side conversion from rich domain values into persistence-shaped values explicit.
 
 ## Required
 
@@ -20,7 +14,8 @@ The store subsystem owns:
 - Use current domain vocabulary at the service/store boundary
 - Keep SQL, driver, and transport types out of store contracts
 - Use explicit parameter names for persistence-shaped values
-- Keep handlers free of store-specific translation work
+- Keep API handlers free of store-specific translation work
+- Do not pass API DTOs into store contracts
 
 ## Canonical Shape
 
@@ -45,7 +40,7 @@ Keep the ownership split clear:
 
 The default flow is:
 
-1. a handler decodes request inputs and calls a service method
+1. an API handler decodes DTO inputs and calls a service method
 2. the service validates domain inputs
 3. the service applies any domain functionality
 4. the service calls the store contract with domain-shaped values
@@ -61,9 +56,9 @@ package service
 import "time"
 
 type Document struct {
-	ID        string    `json:"id"`
-	Title     string    `json:"title"`
-	CreatedAt time.Time `json:"created_at"`
+	ID        string
+	Title     string
+	CreatedAt time.Time
 }
 
 type Store interface {
@@ -148,7 +143,7 @@ Keep the same rules in both cases:
 ## Common Touchpoints
 
 - `subsystems/service/README.md` for service package ownership and constructor shape
-- `subsystems/api-handlers/README.md` for api handler responsibilities
+- `subsystems/api/README.md` for API handler and DTO responsibilities
 - `subsystems/database/README.md` for SQL adapter mechanics
 
 ## Testing Expectations
@@ -158,4 +153,4 @@ Store contracts should make it easy to test:
 - service validation before store calls
 - service-side value conversion before store calls
 - persistence failures wrapped in service-layer errors
-- handlers staying free of persistence-specific translation
+- API handlers staying free of persistence-specific translation

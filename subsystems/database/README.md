@@ -2,19 +2,9 @@
 
 This guide defines the default shape of `internal/database`
 
-Use it when you are creating a database package, opening a SQLite-backed adapter, or implementing store contracts from `internal/service`
+Use it when you are creating a database package, opening a SQLite-backed adapter, or implementing store contracts from `internal/service`.
 
-## Owns
-
-The database subsystem owns:
-
-- opening the database connection
-- required connection setup for normal adapter use
-- schema migration during open
-- concrete implementations of service-owned store contracts
-- SQL queries, scans, and storage-format conversion
-- transaction coordination for multi-step storage work
-- durable invariants enforced by schema and storage behavior
+The database subsystem opens database connections, applies required connection setup, runs schema migrations, implements service-owned store contracts, handles SQL queries and scans, coordinates multi-step storage work, and enforces durable invariants through schema and storage behavior.
 
 ## Required Instructions
 

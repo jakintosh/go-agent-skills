@@ -68,6 +68,8 @@ The important ownership split is:
 - `templates/` holds declarative markup and fragments
 - `static/` holds CSS and small enhancement JS
 
+When a project also exposes a JSON API, `internal/server` should mount the UI router and `internal/api` router as separate route trees. The UI package may call `internal/service` directly for domain behavior, but API DTOs and JSON handlers should stay in `internal/api`.
+
 ## Rendering architecture
 
 Maintain two coordinated render paths:
@@ -117,9 +119,10 @@ func (s *Server) handleProjectDetail(
 		return
 	}
 
-	s.renderer.RenderProjectPage(w, ProjectPageView{
+	pageView := ProjectPageView{
 		Detail: view,
-	})
+	}
+	s.renderer.RenderProjectPage(w, pageView)
 }
 ```
 
@@ -248,5 +251,6 @@ Prefer focused tests around handler behavior and presentation contracts rather t
 ## Related guides
 
 - `app-view-models.md`
-- `http-resource-handlers.md`
+- `api/README.md`
+- `server/README.md`
 - `api-tests.md`
