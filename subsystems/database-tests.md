@@ -366,4 +366,4 @@ Some suites can parallelize cleanly. Others are simpler and more robust without 
 - `database/README.md`
 - `database/migrations.md`
 - `store/README.md`
-- `api-tests.md`
+- `api/testing.md`

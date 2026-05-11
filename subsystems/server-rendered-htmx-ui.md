@@ -253,4 +253,4 @@ Prefer focused tests around handler behavior and presentation contracts rather t
 - `app-view-models.md`
 - `api/README.md`
 - `server/README.md`
-- `api-tests.md`
+- `api/testing.md`

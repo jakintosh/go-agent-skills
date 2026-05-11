@@ -209,22 +209,22 @@ Capture states:
 
 | ID | Rule | Scope | Future Owner | Designation | Current Source | Example Signal | Capture |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| TST-01 | API tests should verify observable HTTP behavior, not private internals. | subsystem | `subsystems/api-tests.md` | required | `API_TEST_STYLE.md` Core principles | repeated router-driven API tests | keep |
-| TST-02 | Each test should focus on one scenario. | subsystem | `subsystems/api-tests.md` | required | `API_TEST_STYLE.md` Core principles | strong in current examples, uneven in older ones | keep |
-| TST-03 | Use Arrange -> Act -> Assert ordering with explicit chunk comments. | subsystem | `subsystems/api-tests.md` | required | `API_TEST_STYLE.md` Canonical test structure | partially present in examples | extract |
-| TST-04 | Assert status first, then payload/error, then side effects. | subsystem | `subsystems/api-tests.md` | required | `API_TEST_STYLE.md` Core principles | repeated result helper usage | keep |
-| TST-05 | Keep setup deterministic and local. | subsystem | `subsystems/api-tests.md` | required | `API_TEST_STYLE.md` Core principles | repeated `SetupTestEnv(t)` pattern | keep |
-| TST-06 | Use `internal/testutil` as the test composition root. | subsystem | `subsystems/api-tests.md` | required | `API_TEST_STYLE.md` internal/testutil responsibilities | repeated across service/database tests | extract |
-| TST-07 | `internal/testutil` should own lifecycle and cleanup. | subsystem | `subsystems/api-tests.md` | required | `API_TEST_STYLE.md` Recommended `TestEnv` shape | repeated in setup helpers | extract |
-| TST-08 | Seed helpers should be deterministic and encode scenario intent. | subsystem | `subsystems/api-tests.md` | required | `API_TEST_STYLE.md` Seed helpers | repeated seed helper patterns | extract |
-| TST-09 | Scenario helpers may help setup, but should not hide assertions. | subsystem | `subsystems/api-tests.md` | required | `API_TEST_STYLE.md` Scenario helpers | visible in testutil usage | keep |
-| TST-10 | Use `wire.TestX` helpers and typed response assertions where they clarify intent. | subsystem | `subsystems/api-tests.md` | default | `API_TEST_STYLE.md` Standard packages and helpers | repeated in API tests | extract |
-| TST-11 | Table-driven tests should be used only when they improve readability. | subsystem | `subsystems/api-tests.md` | default | `API_TEST_STYLE.md` Single-scenario vs table-driven | mixed quality in examples | keep |
-| TST-12 | Do not use `t.Parallel()` by default; only when isolation is clearly safe. | subsystem | `subsystems/api-tests.md` | default | `API_TEST_STYLE.md` Parallelism policy | examples vary | extract |
-| TST-13 | Non-empty JSON request bodies should use raw string literals and empty objects should use exactly `"{}"` when this materially improves scanability. | subsystem | `subsystems/api-tests.md` | default | `API_TEST_STYLE.md` Coding style conventions | not yet consistent in all examples | rewrite |
-| TST-14 | Request body, URL, and headers should be spelled out in their own visible setup statements. | subsystem | `subsystems/api-tests.md` | required | `API_TEST_STYLE.md` Canonical test structure | strong in many API tests | extract |
-| TST-15 | Prefer in-process router tests over real network listeners. | subsystem | `subsystems/api-tests.md` | required | `API_TEST_STYLE.md` Scope; `POLLINATOR_STYLE.md` Tests | repeated across examples | keep |
-| TST-16 | Update CORS preflight tests to include the method request header expected by newer command-go behavior. | subsystem | `subsystems/api-tests.md` | default | `COMMAND-GO-v040-MIGRATION.md` | newer library behavior | extract |
+| TST-01 | API tests should verify observable HTTP behavior, not private internals. | subsystem | `subsystems/api/testing.md` | required | `API_TEST_STYLE.md` Core principles | repeated router-driven API tests | keep |
+| TST-02 | Each test should focus on one scenario. | subsystem | `subsystems/api/testing.md` | required | `API_TEST_STYLE.md` Core principles | strong in current examples, uneven in older ones | keep |
+| TST-03 | Use Arrange -> Act -> Assert ordering with explicit chunk comments. | subsystem | `subsystems/api/testing.md` | required | `API_TEST_STYLE.md` Canonical test structure | partially present in examples | extract |
+| TST-04 | Assert status first, then payload/error, then side effects. | subsystem | `subsystems/api/testing.md` | required | `API_TEST_STYLE.md` Core principles | repeated result helper usage | keep |
+| TST-05 | Keep setup deterministic and local. | subsystem | `subsystems/api/testing.md` | required | `API_TEST_STYLE.md` Core principles | repeated `SetupTestEnv(t)` pattern | keep |
+| TST-06 | Use `internal/testutil` as the test composition root. | subsystem | `subsystems/api/testing.md` | required | `API_TEST_STYLE.md` internal/testutil responsibilities | repeated across service/database tests | extract |
+| TST-07 | `internal/testutil` should own lifecycle and cleanup. | subsystem | `subsystems/api/testing.md` | required | `API_TEST_STYLE.md` Recommended `TestEnv` shape | repeated in setup helpers | extract |
+| TST-08 | Seed helpers should be deterministic and encode scenario intent. | subsystem | `subsystems/api/testing.md` | required | `API_TEST_STYLE.md` Seed helpers | repeated seed helper patterns | extract |
+| TST-09 | Scenario helpers may help setup, but should not hide assertions. | subsystem | `subsystems/api/testing.md` | required | `API_TEST_STYLE.md` Scenario helpers | visible in testutil usage | keep |
+| TST-10 | Use `wire.TestX` helpers and typed response assertions where they clarify intent. | subsystem | `subsystems/api/testing.md` | default | `API_TEST_STYLE.md` Standard packages and helpers | repeated in API tests | extract |
+| TST-11 | Table-driven tests should be used only when they improve readability. | subsystem | `subsystems/api/testing.md` | default | `API_TEST_STYLE.md` Single-scenario vs table-driven | mixed quality in examples | keep |
+| TST-12 | Do not use `t.Parallel()` by default; only when isolation is clearly safe. | subsystem | `subsystems/api/testing.md` | default | `API_TEST_STYLE.md` Parallelism policy | examples vary | extract |
+| TST-13 | Non-empty JSON request bodies should use pretty-printed raw string literals and empty objects should use exactly `"{}"` when this materially improves scanability. | subsystem | `subsystems/api/testing.md` | default | `API_TEST_STYLE.md` Coding style conventions | not yet consistent in all examples | rewrite |
+| TST-14 | Request body, URL, and headers should be spelled out in their own visible setup statements. | subsystem | `subsystems/api/testing.md` | required | `API_TEST_STYLE.md` Canonical test structure | strong in many API tests | extract |
+| TST-15 | Prefer in-process router tests over real network listeners. | subsystem | `subsystems/api/testing.md` | required | `API_TEST_STYLE.md` Scope; `POLLINATOR_STYLE.md` Tests | repeated across examples | keep |
+| TST-16 | Update CORS preflight tests to include the method request header expected by newer command-go behavior. | subsystem | `subsystems/api/testing.md` | default | `COMMAND-GO-v040-MIGRATION.md` | newer library behavior | extract |
 
 ## Server-rendered HTMX UI and app view models
 
@@ -270,7 +270,7 @@ Capture states:
 | A-02 | Avoid deep or overly generic abstractions when direct code is clearer. | foundation | `foundations/philosophy.md` | required | `POLLINATOR_STYLE.md` Legacy patterns to avoid | repeated direct patterns across examples | keep |
 | A-03 | Avoid custom JSON endpoints when HTML fragment responses already satisfy a server-rendered UI interaction. | subsystem | `subsystems/server-rendered-htmx-ui.md` | default | `FRONT_END_STYLE.md` Practical guardrails | frontend apps lean toward HTML fragments | extract |
 | A-04 | Avoid per-route ad hoc response styles and standardize around a small set of response patterns. | subsystem | `subsystems/http-resource-handlers.md` | required | `FRONT_END_STYLE.md` Practical guardrails; `POLLINATOR_STYLE.md` HTTP/API design | repeated envelope and render conventions | rewrite |
-| A-05 | Avoid giant helper APIs that hide test Arrange/Act/Assert intent. | subsystem | `subsystems/api-tests.md` | required | `API_TEST_STYLE.md` internal/testutil responsibilities | repeated guidance | keep |
+| A-05 | Avoid giant helper APIs that hide test Arrange/Act/Assert intent. | subsystem | `subsystems/api/testing.md` | required | `API_TEST_STYLE.md` internal/testutil responsibilities | repeated guidance | keep |
 | A-06 | Do not re-implement config precedence logic in individual commands. | subsystem | `subsystems/cli/with-config.md` | required | `CONFIG-SYSTEM-DESIGN.md` | central `Resolve()` rule | extract |
 | A-07 | Do not bootstrap mutable auth/key state implicitly during normal `serve` startup. | subsystem | `subsystems/service-construction.md` | required | `COMMAND-GO-v040-MIGRATION.md` | explicit init flow replaces bootstrap token startup | extract |
 

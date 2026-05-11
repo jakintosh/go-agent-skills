@@ -2,8 +2,6 @@
 
 This directory is a brief index of the architectural guides used across the style system.
 
-- [`api-tests.md`](./api-tests.md): This is the testing guide for API surfaces when you need the expected shape of handler- and route-level HTTP tests.
-
 - [`app-view-models.md`](./app-view-models.md): This is the guide for shaping view models that sit between application logic and rendered UI.
 
 - [`database-tests.md`](./database-tests.md): This is the testing guide for database adapters when you need the expected structure of persistence-focused tests.
@@ -16,6 +14,7 @@ This directory is a brief index of the architectural guides used across the styl
 
 - [`api/README.md`](./api/README.md): Use the API family for JSON HTTP endpoint structure, API DTOs, route composition, service calls, and HTTP responses.
   - [`api/error-mapping.md`](./api/error-mapping.md): Read this when handlers need consistent service-to-HTTP error translation rules.
+  - [`api/testing.md`](./api/testing.md): Read this when testing API route wiring, middleware, request decoding, response DTOs, or status behavior in-process.
 
 - [`cli/README.md`](./cli/README.md): Use the CLI family for command-tree structure, especially when a binary exposes multiple operational surfaces.
   - [`cli/with-config.md`](./cli/with-config.md): Read this when CLI commands need root path flags, runtime config loading, or a `config` command subtree.

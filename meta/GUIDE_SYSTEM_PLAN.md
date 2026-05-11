@@ -146,7 +146,7 @@ Candidate first-class guides:
   - SQL style
   - row scanning and domain conversion
 
-- `subsystems/api-tests.md`
+- `subsystems/api/testing.md`
   - file naming
   - chunk comments
   - `internal/testutil`
@@ -247,7 +247,7 @@ Leave behind only a short "project blueprint" overview, or retire this document 
 
 Keep as the seed for:
 
-- subsystems/api-tests
+- subsystems/api/testing
 
 Potentially split out:
 
@@ -373,7 +373,7 @@ A good first milestone would be:
 1. `foundations/philosophy.md`
 2. `subsystems/cli-command-trees.md`
 3. `subsystems/http-router-composition.md`
-4. `subsystems/api-tests.md`
+4. `subsystems/api/testing.md`
 5. `subsystems/server-rendered-htmx-ui.md`
 6. `reference/examples.md`
 

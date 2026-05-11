@@ -11,7 +11,7 @@ This document tracks the current queue of subsystem guides to write.
 - `service/README.md`
 - `api/README.md`
 - `server/README.md`
-- `api-tests.md`
+- `api/testing.md`
 - `public-packages.md`
 - `store/README.md`
 - `api/README.md`

@@ -193,9 +193,12 @@ This is the default feel to preserve:
 - response writing stays consistent across routes
 - API response types are exported and reusable
 
+When verifying route wiring, middleware, request decoding, response DTOs, or status behavior, test the built router in-process; read `./testing.md`.
+
 ## Related Guides
 
 - Read `./error-mapping.md` for service-to-HTTP error translation.
+- Read `./testing.md` for in-process API test shape.
 - Read `../routing/README.md` for route-group composition.
 - Read `../server/README.md` for production serving and deployment mounting.
 - Read `../service/README.md` for domain service boundaries.
