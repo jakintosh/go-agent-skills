@@ -17,7 +17,7 @@ This document tracks the current queue of subsystem guides to write.
 - `api/README.md`
 - `database/README.md`
 - `database-tests.md`
-- `project-actions.md`
+- `makefiles/README.md`
 - `server-rendered-htmx-ui.md`
 - `app-view-models.md`
 
@@ -25,6 +25,6 @@ This document tracks the current queue of subsystem guides to write.
 
 ## Notes
 
-- `project-actions.md` may still be folded into foundations instead of staying a standalone subsystem guide.
+- `makefiles/README.md` owns the local Makefile action surface.
 - Future subsystem drafts should follow `WRITING_SUBSYSTEM_GUIDES.md`.
 - New guides should be written from `RULE_INVENTORY_MATRIX.md`, not directly from the legacy source docs.

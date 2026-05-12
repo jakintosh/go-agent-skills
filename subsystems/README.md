@@ -6,8 +6,6 @@ This directory is a brief index of the architectural guides used across the styl
 
 - [`database-tests.md`](./database-tests.md): This is the testing guide for database adapters when you need the expected structure of persistence-focused tests.
 
-- [`project-actions.md`](./project-actions.md): This is the guide for modeling project-scoped actions and the boundaries around how they execute.
-
 - [`public-packages.md`](./public-packages.md): This is the guide for deciding what belongs in public packages and how exported package surfaces should read.
 
 - [`server-rendered-htmx-ui.md`](./server-rendered-htmx-ui.md): This is the guide for building server-rendered HTMX interfaces and their application boundaries.
@@ -31,6 +29,8 @@ This directory is a brief index of the architectural guides used across the styl
   - [`database/migrations-with-go.md`](./database/migrations-with-go.md): Read this when a migration needs procedural Go code instead of only SQL strings.
   - [`database/query-methods.md`](./database/query-methods.md): Read this when implementing ordinary adapter read and write methods.
   - [`database/transactions.md`](./database/transactions.md): Read this when one persistence operation needs transactional coordination across several statements.
+
+- [`makefiles/README.md`](./makefiles/README.md): Use this guide when creating or reviewing a project's `Makefile`.
 
 - [`routing/README.md`](./routing/README.md): Use the routing family for composing one HTTP route tree from smaller mountable route groups.
   - [`routing/middleware-boundaries.md`](./routing/middleware-boundaries.md): Read this when deciding where auth, CORS, or similar middleware should wrap a subtree.

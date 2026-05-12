@@ -258,9 +258,9 @@ Capture states:
 
 | ID | Rule | Scope | Future Owner | Designation | Current Source | Example Signal | Capture |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| BLD-01 | Provide `build`, `test`, and `install` targets at minimum. | subsystem | `subsystems/project-actions.md` or `foundations/repository-layout.md` | default | `POLLINATOR_STYLE.md` Build and automation conventions | repeated `Makefile` shape | decide |
-| BLD-02 | Use the `Makefile` as the primary local action surface. | subsystem | `subsystems/project-actions.md` or `foundations/repository-layout.md` | default | `POLLINATOR_STYLE.md` Build and automation conventions | repeated across examples | decide |
-| BLD-03 | Prefer thin automation that composes public CLI commands over private setup scripts. | subsystem | `subsystems/project-actions.md` | default | `CONFIG-SYSTEM-DESIGN.md` | `make init` guidance | extract |
+| BLD-01 | Provide `help`, `build`, `test`, and `clean` targets at minimum; provide `install` when the project has a CLI binary. | subsystem | `subsystems/makefiles/README.md` | default | `POLLINATOR_STYLE.md` Build and automation conventions | repeated `Makefile` shape | extracted |
+| BLD-02 | Use the `Makefile` as the primary local action surface. | subsystem | `subsystems/makefiles/README.md` | default | `POLLINATOR_STYLE.md` Build and automation conventions | repeated across examples | extracted |
+| BLD-03 | Prefer thin automation that composes public CLI commands over private setup scripts. | subsystem | `subsystems/makefiles/README.md` | default | `CONFIG-SYSTEM-DESIGN.md` | `make init` guidance | extracted |
 
 ## Legacy and anti-pattern rules
 
