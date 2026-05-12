@@ -167,3 +167,4 @@ That keeps schema state inside the database file and avoids a separate migration
 ## Leaf Docs
 
 - If a migration needs reads, batching, or conditional steps, read `./migrations-with-go.md`.
+- If you are testing open behavior, schema readiness, or version advancement, read `./testing.md`.

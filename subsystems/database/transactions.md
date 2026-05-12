@@ -115,3 +115,5 @@ func (db *DB) GetLedgerSnapshot(
 ```
 
 Use a transaction only when the coordinated read view matters. Do not wrap ordinary single-statement reads by default.
+
+Test transaction behavior with `./testing.md` by proving the durable effect at the adapter boundary, including failure cases where partial success would leave storage wrong.

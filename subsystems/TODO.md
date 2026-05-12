@@ -16,7 +16,7 @@ This document tracks the current queue of subsystem guides to write.
 - `store/README.md`
 - `api/README.md`
 - `database/README.md`
-- `database-tests.md`
+- `database/testing.md`
 - `makefiles/README.md`
 - `server-rendered-htmx-ui.md`
 - `app-view-models.md`

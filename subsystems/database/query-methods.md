@@ -181,6 +181,8 @@ Use upserts when the operation is naturally idempotent and the conflict behavior
 
 For ordinary resource updates, accept the update-shaped input from the service contract and apply only the fields present in that input. Preserve unspecified fields and unchanged relationships. For relationship sets, prefer targeted inserts, targeted deletes, upserts, or set-diff SQL over rewriting the whole relationship when only part of it changed.
 
+Test query methods with `./testing.md`, especially storage invariants, not-found behavior, constraint failures, update preservation, ordering, filtering, and null conversion.
+
 ## Optional Filters
 
 When a query has optional filters, build the SQL fragments and argument list locally so the final query remains visible.

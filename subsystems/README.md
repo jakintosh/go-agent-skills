@@ -4,8 +4,6 @@ This directory is a brief index of the architectural guides used across the styl
 
 - [`app-view-models.md`](./app-view-models.md): This is the guide for shaping view models that sit between application logic and rendered UI.
 
-- [`database-tests.md`](./database-tests.md): This is the testing guide for database adapters when you need the expected structure of persistence-focused tests.
-
 - [`public-packages.md`](./public-packages.md): This is the guide for deciding what belongs in public packages and how exported package surfaces should read.
 
 - [`server-rendered-htmx-ui.md`](./server-rendered-htmx-ui.md): This is the guide for building server-rendered HTMX interfaces and their application boundaries.
@@ -28,6 +26,7 @@ This directory is a brief index of the architectural guides used across the styl
   - [`database/migrations.md`](./database/migrations.md): Read this for the default migration shape and ordered schema-change workflow.
   - [`database/migrations-with-go.md`](./database/migrations-with-go.md): Read this when a migration needs procedural Go code instead of only SQL strings.
   - [`database/query-methods.md`](./database/query-methods.md): Read this when implementing ordinary adapter read and write methods.
+  - [`database/testing.md`](./database/testing.md): Read this when testing database adapter behavior, open behavior, migrations, transactions, or persistence invariants.
   - [`database/transactions.md`](./database/transactions.md): Read this when one persistence operation needs transactional coordination across several statements.
 
 - [`makefiles/README.md`](./makefiles/README.md): Use this guide when creating or reviewing a project's `Makefile`.

@@ -58,7 +58,7 @@ For local SQLite services, the default setup is:
 - `PRAGMA busy_timeout = 5000`
 - optional WAL when the database is file-backed
 
-If you are changing schema behavior, read `./migrations.md`. That guide keeps SQL-string migrations as the default path and links to a deeper guide when a migration needs procedural steps.
+If you are changing schema behavior, read `./migrations.md`. That guide keeps SQL-string migrations as the default path and links to a deeper guide when a migration needs procedural steps. Test open and migration behavior with `./testing.md`.
 
 Schema constraints, foreign keys, conditional statements, and transactionally coordinated writes should make invalid persistence operations fail through the adapter. Service methods can decide policy before calling the store, but the database should still protect durable state when a caller reaches the adapter directly.
 
@@ -174,10 +174,10 @@ This is the default shape to preserve:
 - If you are changing schema, read `./migrations.md`
 - If you are implementing ordinary read and write methods, read `./query-methods.md`
 - If one operation spans several SQL statements, read `./transactions.md`
+- If you are testing adapter behavior, read `./testing.md`
 
 ## Common Touchpoints
 
 - `subsystems/store/README.md` for store contract ownership
 - `subsystems/store/with-database.md` for the adapter side of the store boundary
 - `subsystems/service/README.md` for service construction and dependency wiring
-- `subsystems/database-tests.md` for adapter test shape
