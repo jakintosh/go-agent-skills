@@ -219,6 +219,8 @@ or:
 {"error": {"message": "..."}}
 ```
 
+Use `wire.WriteError(...)` for ordinary non-2xx responses. A non-2xx response may include envelope data only when that data is an intentional API contract, because `wire.Client` will decode it before returning a typed `wire.HTTPError`.
+
 For paginated list endpoints, keep the parsing at the top of the handler:
 
 ```go
