@@ -139,7 +139,47 @@ Keep request construction easy to scan:
 import "git.sr.ht/~jakintosh/command-go/pkg/wire"
 ```
 
-It provides the standard JSON response envelope, server helpers such as `wire.WriteData` and `wire.WriteError`, router mounting with `wire.Subrouter`, API clients, and typed handler-test helpers such as `wire.TestGet[T]` and `wire.TestPost[T]`.
+It provides the standard JSON response envelope, server helpers such as `wire.WriteData` and `wire.WriteError`, router mounting with `wire.Subrouter`, API clients, and typed handler-test helpers.
+
+The full helper set is:
+
+```go
+wire.TestGet[T](handler, url, headers...)
+wire.TestPost[T](handler, url, body, headers...)
+wire.TestPut[T](handler, url, body, headers...)
+wire.TestPatch[T](handler, url, body, headers...)
+wire.TestDelete[T](handler, url, headers...)
+wire.TestOptions[T](handler, url, headers...)
+```
+
+`wire.TestResult[T]` exposes the observed response:
+
+```go
+result.Code
+result.Data
+result.Error
+result.Headers
+result.Raw
+```
+
+Use the result assertion that matches the contract under test:
+
+```go
+data := result.ExpectOK(t)
+data := result.ExpectStatusOK(t, http.StatusCreated)
+result.ExpectStatus(t, http.StatusNoContent)
+apiErr := result.ExpectError(t)
+apiErr := result.ExpectStatusError(t, http.StatusBadRequest)
+```
+
+Use a specific type parameter when the test asserts response data. Use `any` for status-only validation:
+
+```go
+wire.TestGet[[]api.DocumentDTO](router, "/documents")
+wire.TestPut[any](router, "/documents/doc-1", body, auth)
+wire.TestPatch[any](router, "/documents/doc-1", body, auth)
+wire.TestDelete[any](router, "/documents/doc-1", auth)
+```
 
 Shared header values belong in `internal/testutil` when they are part of the normal test surface:
 

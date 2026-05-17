@@ -1,6 +1,6 @@
 # Building a CLI Command Tree
 
-**Package:** `git.sr.ht/~jakintosh/command-go@v0.4.2`
+**Package:** `git.sr.ht/~jakintosh/command-go@v0.5.0`
 
 This guide defines the standard shape for CLI command trees in the Studio Pollinator style system, using the `git.sr.ht/~jakintosh/command-go/pkg/args` package.
 
@@ -26,6 +26,8 @@ cmd/<bin>/
 
 - `main.go` owns the root command and shared helpers
 - Top-level command files own one subtree each
+- Define the root and every reusable subtree as package-level `var` values
+- Wire subcommands by reference rather than by large inline literals
 
 ## Defining a tree root
 
@@ -55,7 +57,13 @@ var root = &args.Command{
 		},
 	},
 	Help: "<description>",
-	Options
+	Options: []args.Option{
+		{
+			Long: "config-dir",
+			Type: args.OptionTypeParameter,
+			Help: "path to config directory",
+		},
+	},
 	Subcommands: []*args.Command{
 		apiCmd,
 		initCmd,
@@ -75,16 +83,20 @@ func main() {
 - Define all necessary inputs as "Operand"
 - Define all optional inputs as "Options"
   - `OptionTypeParameter`: options with associated values
-	- `OptionTypeArray`: options with multiple associated values
-	- `OptionTypeFlag`: options that are boolean (true/false)
-- Keep command handlers inline on the command definition
+  - `OptionTypeArray`: options with multiple associated values
+  - `OptionTypeFlag`: options that are boolean (true/false)
+- Use branch commands to group workflows and leaf commands to execute behavior
+- Put shared options at the highest command where they make semantic sense
+- Keep command handlers inline on the command definition unless the handler is large enough to obscure the tree
 - Handlers should not contain any business logic, and should only convert CLI context into config, server, client, or core domain service calls
 - Use `input.GetOperand(<name>)` to parse mandatory operand values
 - Use the most relevant option parser:
-	- `GetParameter()/GetIntParameter()`: gets string/int value or `nil` if not found
-	- `GetParameterOr()/GetIntParameterOr()`: gets string/int value or a default value if not found
-	- `GetFlag()/GetFlagCount()`: get the presence of a flag, or the total time a flag was used
-	- `GetArray()`/`GetIntArray()`: get all values for an array
+  - `GetParameter()/GetIntParameter()`: gets string/int value or `nil` if not found
+  - `GetParameterOr()/GetIntParameterOr()`: gets string/int value or a default value if not found
+  - `GetFlag()/GetFlagCount()`: get the presence of a flag, or the total time a flag was used
+  - `GetArray()`/`GetIntArray()`: get all values for an array
+- Remember that options declared on parent commands are available to all descendants
+- Treat parser validation as already complete when the handler runs
 - Structure command handlers by phases:
 	1. Extract inputs
 	2. Validate inputs
@@ -96,7 +108,7 @@ A full subcommand example:
 ```go
 var widgetCmd = &args.Command{
 	Name: "widget",
-	Help: "process widgets"
+	Help: "process widgets",
 	Operands: []args.Operand{
 		{
 			Name: "name",
@@ -119,26 +131,33 @@ var widgetCmd = &args.Command{
 			Type: args.OptionTypeFlag,
 			Help: "is widget in stock",
 		},
+		{
+			Long: "count",
+			Type: args.OptionTypeParameter,
+			Help: "widget count",
+		},
 	},
 	Handler: func(i *args.Input) error {
 
 		// parse inputs
 		name := i.GetOperand("name")
-		datestr := i.GetParameterOr("date", "1999-12-31")
+		dateStr := i.GetParameterOr("date", "1999-12-31")
 		count := i.GetIntParameterOr("count", 0)
 
 		// validate inputs
 		date, err := parseDateStr(dateStr)
 		if err != nil {
-			return fmt.Errorf("invald date: %w", err)
+			return fmt.Errorf("invalid date: %w", err)
 		}
 
 		// set up service
 		svcOpts := service.Options{
 			Name: name,
-			Description: description
 		}
-		svc := service.Init(svcOpts)
+		svc, err := service.New(svcOpts)
+		if err != nil {
+			return err
+		}
 		
 		// execute
 		result, err := svc.Do(date, count)
@@ -152,6 +171,52 @@ var widgetCmd = &args.Command{
 	},
 }
 ```
+
+## Option and operand style
+
+Use operands for required ordered values that read naturally by position:
+
+```text
+<bin> import <source> <destination>
+<bin> api user get <id>
+```
+
+Use options for optional values, toggles, repeated inputs, and values whose meaning is clearer when named:
+
+```go
+Options: []args.Option{
+	{
+		Short: 'v',
+		Long:  "verbose",
+		Type:  args.OptionTypeFlag,
+		Help:  "increase log verbosity",
+	},
+	{
+		Long: "timeout",
+		Type: args.OptionTypeParameter,
+		Help: "request timeout in seconds",
+	},
+	{
+		Long: "tag",
+		Type: args.OptionTypeArray,
+		Help: "resource tag",
+	},
+}
+```
+
+The `args` parser supports long options with separate or equals values, grouped short flags, repeated flags, repeated arrays, and `--` to stop option parsing. Do not reimplement these mechanics in handlers.
+
+## Extending or refactoring an existing CLI
+
+When adding to an existing command tree, preserve the established user-facing shape unless there is an explicit product reason to change it.
+
+- Keep existing command names, option names, operands, output formats, and exit behavior stable
+- Add new leaves or branches by defining named commands and wiring them into the nearest existing parent
+- Move options upward only when the option is genuinely shared by the full subtree
+- Convert ad hoc `flag` or `os.Args` parsing into operands, options, and handlers without changing caller-visible behavior
+
+This keeps refactors from becoming accidental CLI redesigns.
+
 ## Command tree design
 
 A good command tree should make the operational surface obvious.
@@ -209,6 +274,8 @@ For example:
 This works best when the CLI shape mirrors the service's resource vocabulary and, when reasonable, the HTTP resource paths as well.
 
 For `serve`, prefer resolving runtime config and delegating serving composition to `internal/server` rather than constructing service/API packages in the command handler.
+
+If CLI commands call a JSON API, read `./calling-api.md`.
 
 ## Small helpers
 

@@ -181,3 +181,5 @@ This is the default shape to preserve:
 - `subsystems/store/README.md` for store contract ownership
 - `subsystems/store/with-database.md` for the adapter side of the store boundary
 - `subsystems/service/README.md` for service construction and dependency wiring
+- `subsystems/api/with-keys.md` for attaching `command-go/pkg/keys` SQL storage
+- `subsystems/api/with-cors.md` for attaching `command-go/pkg/cors` SQL storage

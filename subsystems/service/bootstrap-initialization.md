@@ -90,18 +90,28 @@ The important boundary is simple:
 When initialization and runtime behavior share permission declarations or similar constants, declare them once in the service package and reuse them everywhere
 
 ```go
-var (
-	PermissionRead  = keys.Permission{Name: "read"}
-	PermissionWrite = keys.Permission{Name: "write"}
-	PermissionAdmin = keys.Permission{Name: "admin"}
+const (
+	PermissionRead  keys.PermissionKey = "read"
+	PermissionWrite keys.PermissionKey = "write"
+	PermissionAdmin keys.PermissionKey = "admin"
 )
 
-func AllKeyPermissions() []*keys.Permission {
-	return []*keys.Permission{
-		&PermissionRead,
-		&PermissionWrite,
-		&PermissionAdmin,
-	}
+var KeyPermissions = keys.Permissions{
+	{
+		Key:         PermissionRead,
+		Display:     "Read",
+		Description: "Read project data",
+	},
+	{
+		Key:         PermissionWrite,
+		Display:     "Write",
+		Description: "Create and update project data",
+	},
+	{
+		Key:         PermissionAdmin,
+		Display:     "Admin",
+		Description: "Manage settings and API keys",
+	},
 }
 ```
 

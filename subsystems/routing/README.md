@@ -69,7 +69,7 @@ func (a *API) Router() http.Handler {
 
 	wire.Subrouter(root, "/health", a.buildHealthRouter())
 	wire.Subrouter(root, "/documents", a.buildDocumentRouter(mw))
-	wire.Subrouter(root, "/admin", mw.auth(a.buildAdminRouter(mw), &service.PermissionAdmin))
+	wire.Subrouter(root, "/admin", mw.auth(a.buildAdminRouter(mw), service.PermissionAdmin))
 
 	return root
 }
@@ -80,7 +80,7 @@ func (a *API) buildDocumentRouter(
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("GET /", mw.corsFunc(a.handleListDocuments))
-	mux.HandleFunc("POST /", mw.authFunc(a.handleCreateDocument, &service.PermissionWrite))
+	mux.HandleFunc("POST /", mw.authFunc(a.handleCreateDocument, service.PermissionWrite))
 	mux.HandleFunc("GET /{document_id}", mw.corsFunc(a.handleGetDocument))
 
 	return mux

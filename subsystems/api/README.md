@@ -19,6 +19,8 @@ Keep domain rules in `internal/service` and persistence mechanics in store imple
 - Model resource updates as an explicit update request passed to one service method for that resource.
 - Use explicit path values and query parsing in handlers.
 - Use one small set of response helpers across the API surface.
+- Use the `wire` response envelope for JSON success and error responses.
+- Use `wire.ParsePagination(...)` for conventional `limit` and `offset` query parsing.
 - Keep service-to-HTTP error translation in a package-level helper unless a project proves that is too large.
 - Keep deployment base-path mounting and listen behavior outside `internal/api`.
 
@@ -81,7 +83,7 @@ func New(
 
 	keyOpts := keys.Options{
 		Store:       opts.Keys,
-		Permissions: service.AllKeyPermissions(),
+		Permissions: service.KeyPermissions,
 	}
 	keysSvc, err := keys.New(keyOpts)
 	if err != nil {
@@ -97,7 +99,7 @@ func New(
 func (a *API) Router() http.Handler {
 	root := http.NewServeMux()
 	wire.Subrouter(root, "/documents", a.buildDocumentRouter())
-	wire.Subrouter(root, "/admin", a.keys.WithAuth(a.buildAdminRouter(), &service.PermissionAdmin))
+	wire.Subrouter(root, "/admin", a.keys.WithAuth(a.buildAdminRouter(), service.PermissionAdmin))
 	return root
 }
 ```
@@ -193,12 +195,61 @@ This is the default feel to preserve:
 - response writing stays consistent across routes
 - API response types are exported and reusable
 
+## Wire Helpers
+
+`command-go/pkg/wire` is the standard HTTP wire-format package for JSON APIs.
+
+Use:
+
+- `wire.WriteData(w, status, data)` for success responses
+- `wire.WriteData(w, http.StatusNoContent, nil)` for status-only success responses
+- `wire.WriteError(w, status, message)` for error responses
+- `wire.ParsePagination(r)` for shared `limit` and `offset` query parsing
+- `wire.Subrouter(...)` for mounting route groups
+
+The response envelope is:
+
+```json
+{"data": <value>}
+```
+
+or:
+
+```json
+{"error": {"message": "..."}}
+```
+
+For paginated list endpoints, keep the parsing at the top of the handler:
+
+```go
+func (a *API) handleListDocuments(
+	w http.ResponseWriter,
+	r *http.Request,
+) {
+	limit, offset, err := wire.ParsePagination(r)
+	if err != nil {
+		wire.WriteError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	docs, err := a.service.ListDocuments(limit, offset)
+	if err != nil {
+		writeServiceError(w, err)
+		return
+	}
+
+	wire.WriteData(w, http.StatusOK, DocumentsDTOFromService(docs))
+}
+```
+
 When verifying route wiring, middleware, request decoding, response DTOs, or status behavior, test the built router in-process; read `./testing.md`.
 
 ## Related Guides
 
 - Read `./error-mapping.md` for service-to-HTTP error translation.
 - Read `./testing.md` for in-process API test shape.
+- Read `./with-keys.md` when the API exposes key management or uses API-key auth.
+- Read `./with-cors.md` when the API needs runtime CORS origin management.
 - Read `../routing/README.md` for route-group composition.
 - Read `../server/README.md` for production serving and deployment mounting.
 - Read `../service/README.md` for domain service boundaries.

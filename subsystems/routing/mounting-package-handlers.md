@@ -4,6 +4,8 @@ This guide defines how to compose package-owned HTTP handlers into your route tr
 
 Use it when a subsystem already exposes its own `http.Handler` and your API or server package needs to decide where that handler lives and what boundary protects it.
 
+Common examples include `command-go/pkg/keys` and `command-go/pkg/cors`, which expose package-owned management handlers that should be mounted into the application's API tree.
+
 ## Required
 
 - Mount package-provided handlers directly instead of rebuilding their routes manually.
@@ -28,7 +30,7 @@ func (a *API) Router() http.Handler {
 	}
 
 	root := http.NewServeMux()
-	wire.Subrouter(root, "/settings", mw.auth(a.buildSettingsRouter(), &service.PermissionAdmin))
+	wire.Subrouter(root, "/settings", mw.auth(a.buildSettingsRouter(), service.PermissionAdmin))
 	return root
 }
 
@@ -48,3 +50,5 @@ This keeps the split obvious:
 - your API owns where that handler is mounted inside the API tree
 - your API owns who can reach that mounted area
 - your server owns where the complete API tree is mounted in production
+
+When the mounted handler also has a CLI command, pass the full API collection path to that command. For example, if `internal/server` mounts `api.Router()` at `/api/v1` and `internal/api` mounts `keys.Handler()` at `/settings/keys`, the CLI command should receive `/api/v1/settings/keys`.

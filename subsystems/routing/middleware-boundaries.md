@@ -17,8 +17,8 @@ Prefer a bundle that supports both subtree and direct-route wrapping:
 
 ```go
 type Middleware struct {
-	auth     func(http.Handler, *keys.Permission) http.Handler
-	authFunc func(http.HandlerFunc, *keys.Permission) http.HandlerFunc
+	auth     func(http.Handler, ...keys.PermissionKey) http.Handler
+	authFunc func(http.HandlerFunc, ...keys.PermissionKey) http.HandlerFunc
 	cors     func(http.Handler) http.Handler
 	corsFunc func(http.HandlerFunc) http.HandlerFunc
 }
@@ -27,13 +27,13 @@ type Middleware struct {
 Use handler-level wrappers when the whole mounted group shares one boundary:
 
 ```go
-wire.Subrouter(root, "/admin", mw.auth(a.buildAdminRouter(mw), &service.PermissionAdmin))
+wire.Subrouter(root, "/admin", mw.auth(a.buildAdminRouter(mw), service.PermissionAdmin))
 ```
 
 Use func-level wrappers when the boundary belongs to one direct route inside a local group:
 
 ```go
-mux.HandleFunc("POST /", mw.authFunc(a.handleCreateDocument, &service.PermissionWrite))
+mux.HandleFunc("POST /", mw.authFunc(a.handleCreateDocument, service.PermissionWrite))
 ```
 
 This keeps the composition code easy to scan:
@@ -54,7 +54,7 @@ func (a *API) Router() http.Handler {
 
 	root := http.NewServeMux()
 	wire.Subrouter(root, "/documents", a.buildDocumentRouter(mw))
-	wire.Subrouter(root, "/settings", mw.auth(a.buildSettingsRouter(mw), &service.PermissionAdmin))
+	wire.Subrouter(root, "/settings", mw.auth(a.buildSettingsRouter(mw), service.PermissionAdmin))
 	return root
 }
 
@@ -63,7 +63,7 @@ func (a *API) buildDocumentRouter(
 ) http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /", mw.corsFunc(a.handleListDocuments))
-	mux.HandleFunc("POST /", mw.authFunc(a.handleCreateDocument, &service.PermissionWrite))
+	mux.HandleFunc("POST /", mw.authFunc(a.handleCreateDocument, service.PermissionWrite))
 	return mux
 }
 ```

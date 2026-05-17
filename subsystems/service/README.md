@@ -18,6 +18,7 @@ The service package is the domain behavior boundary for the project. It defines 
 - Keep service types separate from API DTOs.
 - Keep permission constants in `internal/service` when they express domain authorization.
 - Keep HTTP handlers, route composition, listen behavior, and deployment mounting in the API or server layer.
+- When API-key permissions are used, keep the permission vocabulary in `internal/service` and wire enforcement in `internal/api`.
 
 ## Canonical Package Shape
 
@@ -192,6 +193,7 @@ Some services need additional structure beyond the default path.
 - If startup must initialize durable mutable state explicitly, read `./bootstrap-initialization.md`.
 - If the service owns long-lived background work, read `./lifecycle-hooks.md`.
 - If you need JSON HTTP endpoint structure, read `../api/README.md`.
+- If the API uses `command-go/pkg/keys`, read `../api/with-keys.md`.
 - If you need production serving composition, read `../server/README.md`.
 
 ## Testing Expectations

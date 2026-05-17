@@ -11,11 +11,14 @@ This directory is a brief index of the architectural guides used across the styl
 - [`api/README.md`](./api/README.md): Use the API family for JSON HTTP endpoint structure, API DTOs, route composition, service calls, and HTTP responses.
   - [`api/error-mapping.md`](./api/error-mapping.md): Read this when handlers need consistent service-to-HTTP error translation rules.
   - [`api/testing.md`](./api/testing.md): Read this when testing API route wiring, middleware, request decoding, response DTOs, or status behavior in-process.
+  - [`api/with-keys.md`](./api/with-keys.md): Read this when an API uses `command-go/pkg/keys` for API-key auth or key management.
+  - [`api/with-cors.md`](./api/with-cors.md): Read this when an API uses `command-go/pkg/cors` for dynamic CORS origin management.
 
 - [`cli/README.md`](./cli/README.md): Use the CLI family for command-tree structure, especially when a binary exposes multiple operational surfaces.
   - [`cli/with-config.md`](./cli/with-config.md): Read this when CLI commands need root path flags, runtime config loading, or a `config` command subtree.
   - [`cli/integrating-envs.md`](./cli/integrating-envs.md): Read this when environment variables need to be surfaced cleanly through the command interface.
   - [`cli/integrating-version.md`](./cli/integrating-version.md): Read this when a binary needs a standard version constant and version-reporting behavior.
+  - [`cli/calling-api.md`](./cli/calling-api.md): Read this when CLI commands call a JSON HTTP API with `wire.Client`.
 
 - [`config/README.md`](./config/README.md): Use the config family for applications that own authored config, resolved runtime state, secret loading, and config-backed resources.
   - [`config/runtime-resolution.md`](./config/runtime-resolution.md): Read this when defining merge precedence, derived paths, and the single runtime resolution flow.

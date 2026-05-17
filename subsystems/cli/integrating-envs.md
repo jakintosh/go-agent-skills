@@ -1,44 +1,28 @@
-# Integrating CLI root with `command-go/pkg/envs`
+# Integrating CLI Root with `command-go/pkg/envs`
 
-**Pre-requisite:** ./building-a-cli.md (how to build a CLI in general)
-**Package:** `git.sr.ht/~jakintosh/command-go@v0.4.2`
+**Pre-requisite:** `./README.md`
+**Package:** `git.sr.ht/~jakintosh/command-go@v0.5.0`
 
-For CLI projects that interact with an HTTP API, it can be useful to have a way to manage api endpoint/key pairs. The `command-go/pkg/envs` package provides an off-the-shelf `&args.Command` subtree that implements this behavior.
+Use this guide when a CLI calls an HTTP API and needs named environments for base URL and API key pairs.
 
-## Using `envs.CommandOptions`
+The `envs` package provides the standard `env` command tree, config-file persistence, active-environment resolution, and helpers for building a `wire.Client`.
 
-`envs.CommandOptions` is a struct that configures the built-in "env" subcommand. It requires a default configuration directory to read from, and a "Key Backend".
+## Required
 
-Under the hood, the "env" subcommand provides a built in key-rotation command, which requires a backend interface that allows it to interact with the API key provider. If using the `command-go/pkg/keys` package to manage api keys (very likely), the `keys` package itself provides an implementation of that interface to use in `envs.CommandOptions`.
+- Put `envs.ConfigOptions` or `envs.ConfigOptionsAnd(...)` on the root command.
+- Put `wire.ClientOptions` or `wire.ClientOptionsAnd(...)` on the API-calling subtree.
+- Register `envs.Command(...)` as a root-level subtree named `env`.
+- Provide an `envs.KeyBackend` through `envs.CommandOptions`.
+- Use `envs.LoadConfig(...)` or `envs.ResolveClient(...)` in handlers instead of opening `environments.json` directly.
+- Keep API-calling handlers thin: resolve a client, call the API, print output.
 
-```go
-var envsOpts = envs.CommandOptions{
-	DefaultConfigDir: DEFAULT_CFG,
-	KeyBackend: keys.EnvBackend{
-		CollectionPath: "/keys",
-	},
-}
-```
+## Root Options
 
-## Using `envs.ConfigOptions`
-
-The built in "env" command will look for a set of options when executed. Instead of adding them manually, you can set the value of `Options` to `envs.ConfigOptions()`:
+The root command owns config and environment selection because those options apply across the command tree.
 
 ```go
 var rootCommand = &args.Command{
 	Name: BIN_NAME,
-  // ..
-	Options: envs.ConfigOptions(),
-  // ...
-}
-```
-
-If you want to add additional options on top of those, you can use `envs.ConfigOptionsAnd`:
-
-```go
-var rootCommand = &args.Command{
-	Name: BIN_NAME,
-  // ..
 	Options: envs.ConfigOptionsAnd(
 		args.Option{
 			Short: 'v',
@@ -47,36 +31,104 @@ var rootCommand = &args.Command{
 			Help:  "enable verbose logs",
 		},
 	),
-  // ...
-}
-```
-
-## Using `envs.Command()`
-
-Finally, to register the "env" command, use the `envs.Command()` function directly in the subcommand slice literal, passing in the `envs.CommandOptions` struct.
-
-```go
-var rootCommand = &args.Command{
-  // ...
 	Subcommands: []*args.Command{
+		apiCommand,
 		envs.Command(envsOpts),
 	},
 }
 ```
 
-## Full code example
+`envs.ConfigOptions` provides:
+
+- `--config-dir`
+- `--env`
+
+## API Client Options
+
+The API-calling branch owns direct client overrides because local commands should not imply HTTP access.
 
 ```go
-import "git.sr.ht/~jakintosh/command-go/pkg/envs"
+var apiCommand = &args.Command{
+	Name: "api",
+	Help: "call the HTTP API",
+	Options: wire.ClientOptions,
+	Subcommands: []*args.Command{
+		apiUserCommand,
+	},
+}
+```
 
-const (
-	DEFAULT_CFG = "/etc/<bin>"
+`wire.ClientOptions` provides:
+
+- `--base-url`
+- `--api-key`
+
+Use `wire.ClientOptionsAnd(...)` when the branch also needs local options such as output format.
+
+## Environment Command
+
+Configure the built-in `env` command with a default config directory and key backend.
+
+```go
+var envsOpts = envs.CommandOptions{
+	DefaultConfigDir: DEFAULT_CFG,
+	KeyBackend: keys.EnvBackend{
+		CollectionPath: "/api/v1/settings/keys",
+	},
+}
+```
+
+When the project uses `command-go/pkg/keys`, use `keys.EnvBackend`. Its collection path must match where the keys handler is mounted in the HTTP API.
+
+## Resolving a Client
+
+Use `envs.ResolveClient(...)` when a command needs a `wire.Client`.
+
+```go
+func buildClient(
+	i *args.Input,
+) (
+	wire.Client,
+	error,
+) {
+	return envs.ResolveClient(i, DEFAULT_CFG, "/api/v1")
+}
+```
+
+Resolution order is:
+
+1. `--config-dir`, then the default config dir, to find `environments.json`.
+2. `--env`, then `CLI_ENV`, then stored `activeEnv`, to choose the environment.
+3. `--base-url` and `--api-key`, then the active environment values, to build the client.
+4. `pathPrefix`, appended to the resolved base URL.
+
+The config directory is created with `0700` permissions and `environments.json` is written with `0600` permissions.
+
+## Full Example
+
+```go
+import (
+	"git.sr.ht/~jakintosh/command-go/pkg/args"
+	"git.sr.ht/~jakintosh/command-go/pkg/envs"
+	"git.sr.ht/~jakintosh/command-go/pkg/keys"
+	"git.sr.ht/~jakintosh/command-go/pkg/wire"
 )
+
+const DEFAULT_CFG = "/etc/<bin>"
 
 var envsOpts = envs.CommandOptions{
 	DefaultConfigDir: DEFAULT_CFG,
 	KeyBackend: keys.EnvBackend{
-		CollectionPath: "/keys",
+		CollectionPath: "/api/v1/settings/keys",
+	},
+}
+
+var apiCommand = &args.Command{
+	Name: "api",
+	Help: "call the HTTP API",
+	Options: wire.ClientOptions,
+	Subcommands: []*args.Command{
+		apiUserCommand,
 	},
 }
 
@@ -106,10 +158,11 @@ var rootCommand = &args.Command{
 }
 ```
 
-## Command line interface
+## Command Line Interface
 
-Once complete, the "env" command added to your tree will provide the following interface:
-```
+The `env` subtree provides:
+
+```text
 Usage: example env <subcommand> | [options...]
 
 Subcommands:
@@ -123,4 +176,11 @@ Subcommands:
 Options:
     --config-dir..............path to config directory
     --env.....................environment name override
+```
+
+API-calling subtrees that include `wire.ClientOptions` also accept:
+
+```text
+    --base-url................API base URL override
+    --api-key.................API key override
 ```

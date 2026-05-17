@@ -1,67 +1,64 @@
-# Integrating CLI root with `command-go/pkg/version`
+# Integrating CLI Root with `command-go/pkg/version`
 
-**Pre-requisite:** ./building-a-cli.md (how to build a CLI in general)
-**Package:** `git.sr.ht/~jakintosh/command-go@v0.4.2`
+**Pre-requisite:** `./README.md`
+**Package:** `git.sr.ht/~jakintosh/command-go@v0.5.0`
 
-This guide defines how to use the `command-go` module to show version information on the CLI.
+Use this guide when a binary should expose build metadata through a standard `version` subcommand.
 
-## Integration
+The `version` package generates a package-level `VersionInfo` value from git metadata and provides `version.Command(VersionInfo)` for the CLI tree.
 
-The `command-go/pkg/version` extracts version information from git and generates a struct literal `VersionInfo`.
+## Required
 
-Here's an example of what the generated code looks like:
-```go
-var VersionInfo = version.Info{
-    Version:   "v1.2.3",
-    Commit:    "abc1234567890",
-    BuildDate: "2024-01-15T10:30:45Z",
-}
-```
+- Add one `generate_version.go` marker file in each main binary package.
+- Run `go generate ./...` before building.
+- Pass the generated `VersionInfo` to `version.Command(...)`.
+- Use `VersionInfo.Version` for `args.Config.Version`.
+- Define `--verbose` at the root when the version command should print commit and build date.
+- Ignore generated `version_generated.go` files unless the project intentionally commits generated code.
 
-### Marker file
+## Marker File
 
-First create a generation marker file in `cmd/<bin>/generate_version.go`:
+Create `cmd/<bin>/generate_version.go`:
+
 ```go
 //go:generate go run git.sr.ht/~jakintosh/command-go/pkg/version/generate
 
 package main
 ```
 
-## Build process
+Running `go generate ./...` creates `version_generated.go` in the same package.
 
-Update the Makefile/build script to call `go generate ./...` before building
-
-```makefile
-BIN_DIR := ./bin
-APP := example
-
-.PHONY: build test generate
-
-build: generate
-        mkdir -p $(BIN_DIR)
-        go build -o $(BIN_DIR)/$(APP) ./cmd/$(APP)
-
-generate:
-        go generate ./...
-
-test:
-        go test ./...
-```
-## Root command in main.go
-
-- If using `Config.Version`, update the field to use the generated `VersionInfo.Version` value
-- Add the built-in `version.Command()` subcommand to the root-level Subcommands slice, passing in the generated `VersionInfo` as a parameter
+The generated value has this shape:
 
 ```go
-import "git.sr.ht/~jakintosh/command-go/pkg/version"
+var VersionInfo = version.Info{
+	Version:   "v1.2.3",
+	Commit:    "abc1234567890",
+	BuildDate: "2024-01-15T10:30:45Z",
+}
+```
+
+## Root Command
+
+Wire the version value into both root metadata and the command tree.
+
+```go
+import (
+	"git.sr.ht/~jakintosh/command-go/pkg/args"
+	"git.sr.ht/~jakintosh/command-go/pkg/version"
+)
 
 var rootCmd = &args.Command{
 	Name: "example",
 	Config: &args.Config{
 		Version: VersionInfo.Version,
+		HelpOption: &args.HelpOption{
+			Short: 'h',
+			Long:  "help",
+		},
 	},
-	Options: []*args.Option{
-		args.Option{
+	Options: []args.Option{
+		{
 			Short: 'v',
 			Long:  "verbose",
 			Type:  args.OptionTypeFlag,
@@ -70,8 +67,46 @@ var rootCmd = &args.Command{
 	},
 	Subcommands: []*args.Command{
 		version.Command(VersionInfo),
+		serveCommand,
 	},
 }
 ```
 
-Once integrated, you'll be able to call `<bin> version (-v/--verbose)`, which will show either the short version tag (without `-v`), or a full version info with commit hash and build time (with `-v`).
+The `version` command responds to a long option named `verbose`, but it does not define that option itself. Define `-v`/`--verbose` at the root so it inherits into the version command.
+
+## Build Process
+
+Run generation before every build:
+
+```makefile
+BIN_DIR := ./bin
+APP := example
+
+.PHONY: build generate test
+
+build: generate
+	mkdir -p $(BIN_DIR)
+	go build -o $(BIN_DIR)/$(APP) ./cmd/$(APP)
+
+generate:
+	go generate ./...
+
+test:
+	go test ./...
+```
+
+For multiple binaries, each `cmd/<bin>` package should have its own marker file. A single `go generate ./...` pass will generate one `version_generated.go` beside each marker.
+
+## Command Behavior
+
+```text
+$ example version
+v1.2.3
+
+$ example version --verbose
+version:  v1.2.3
+commit:   abc1234567890
+built:    2024-01-15T10:30:45Z
+```
+
+The generator uses git tags, commit hashes, and build timestamps. Build environments such as CI or Docker must run with enough git metadata available for the desired version string.
