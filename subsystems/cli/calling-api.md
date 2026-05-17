@@ -55,7 +55,32 @@ func apiClient(
 }
 ```
 
-`envs.ResolveClient(...)` loads `environments.json`, applies `--env`, `CLI_ENV`, `--base-url`, and `--api-key`, then appends the API path prefix to the base URL.
+`envs.ResolveClient(...)` loads `environments.json`, applies `--env`, `CLI_ENV`, `--base-url`, and `--api-key`, then normalizes and appends the API path prefix to the base URL.
+
+For commands that need diagnostics or explicit configuration checks, resolve `envs.ClientResolution` first:
+
+```go
+func requiredAPIClient(
+	i *args.Input,
+) (
+	wire.Client,
+	error,
+) {
+	resolution, err := envs.ResolveClientContext(i, DEFAULT_CFG, "/api/v1")
+	if err != nil {
+		return wire.Client{}, err
+	}
+	if err := resolution.RequireBaseURL(); err != nil {
+		return wire.Client{}, err
+	}
+	if err := resolution.RequireAPIKey(); err != nil {
+		return wire.Client{}, err
+	}
+	return resolution.Client, nil
+}
+```
+
+Diagnostic commands should report `resolution.APIKeySet` and `resolution.APIKeySource`, not the raw `resolution.Client.APIKey`.
 
 If a project does not use `envs`, construct `wire.Client` from the project's config subsystem instead.
 

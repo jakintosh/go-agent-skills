@@ -13,7 +13,7 @@ The `envs` package provides the standard `env` command tree, config-file persist
 - Put `wire.ClientOptions` or `wire.ClientOptionsAnd(...)` on the API-calling subtree.
 - Register `envs.Command(...)` as a root-level subtree named `env`.
 - Provide an `envs.KeyBackend` through `envs.CommandOptions`.
-- Use `envs.LoadConfig(...)` or `envs.ResolveClient(...)` in handlers instead of opening `environments.json` directly.
+- Use `envs.LoadConfig(...)`, `envs.ResolveClient(...)`, or `envs.ResolveClientContext(...)` in handlers instead of opening `environments.json` directly.
 - Keep API-calling handlers thin: resolve a client, call the API, print output.
 
 ## Root Options
@@ -82,7 +82,7 @@ When the project uses `command-go/pkg/keys`, use `keys.EnvBackend`. Its collecti
 
 ## Resolving a Client
 
-Use `envs.ResolveClient(...)` when a command needs a `wire.Client`.
+Use `envs.ResolveClient(...)` when an ordinary request command needs a `wire.Client`.
 
 ```go
 func buildClient(
@@ -100,9 +100,75 @@ Resolution order is:
 1. `--config-dir`, then the default config dir, to find `environments.json`.
 2. `--env`, then `CLI_ENV`, then stored `activeEnv`, to choose the environment.
 3. `--base-url` and `--api-key`, then the active environment values, to build the client.
-4. `pathPrefix`, appended to the resolved base URL.
+4. `pathPrefix`, normalized and appended to the resolved base URL.
 
 The config directory is created with `0700` permissions and `environments.json` is written with `0600` permissions.
+
+## Inspecting Client Resolution
+
+Use `envs.ResolveClientContext(...)` when a command needs to explain or validate how the client was resolved.
+
+This is useful for:
+
+- `status` commands
+- diagnostic output
+- bootstrap checks
+- key-management commands
+- setup flows that need to report missing configuration
+
+```go
+func inspectClient(
+	i *args.Input,
+) error {
+	resolution, err := envs.ResolveClientContext(i, DEFAULT_CFG, "/api/v1")
+	if err != nil {
+		return err
+	}
+
+	fmt.Println("env:", resolution.EnvName)
+	fmt.Println("env source:", resolution.EnvSource)
+	fmt.Println("env exists:", resolution.EnvExists)
+	fmt.Println("base url:", resolution.BaseURL)
+	fmt.Println("base url source:", resolution.BaseURLSource)
+	fmt.Println("api key configured:", resolution.APIKeySet)
+	fmt.Println("api key source:", resolution.APIKeySource)
+
+	return nil
+}
+```
+
+`ClientResolution` keeps both the final client and safe inspection fields:
+
+- `Client` is the final `wire.Client` used for requests.
+- `EnvName`, `EnvSource`, and `EnvExists` describe environment selection.
+- `BaseURL` is the normalized service base URL before `PathPrefix` is appended.
+- `Client.BaseURL` is the final request base URL after `PathPrefix` is appended.
+- `APIKeySet` reports whether a key was resolved without exposing the secret.
+- `BaseURLSource` and `APIKeySource` describe where each value came from.
+- `PathPrefix` records the normalized path prefix used to build the final client.
+
+String values on `ClientResolution` are normalized for callers. Environment names and API keys are trimmed, base URLs are trimmed and have trailing slashes removed, and path prefixes are trimmed into a leading-slash form such as `/api/v1`.
+
+Resolution sources are `SourceUnset`, `SourceOption`, `SourceOS`, and `SourceConfig`. Environment names may come from `--env`, `CLI_ENV`, or config. Base URLs and API keys may come from options or config.
+
+Status and debug output should prefer `APIKeySet` and `APIKeySource` over `resolution.Client.APIKey`. The raw API key remains on `resolution.Client.APIKey` only so requests can be made.
+
+Use the requirement helpers when a command has a hard dependency:
+
+```go
+resolution, err := envs.ResolveClientContext(i, DEFAULT_CFG, "/api/v1")
+if err != nil {
+	return err
+}
+if err := resolution.RequireBaseURL(); err != nil {
+	return err
+}
+if err := resolution.RequireAPIKey(); err != nil {
+	return err
+}
+
+client := resolution.Client
+```
 
 ## Full Example
 
