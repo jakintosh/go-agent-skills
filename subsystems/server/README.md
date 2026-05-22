@@ -4,7 +4,7 @@ This guide defines the default shape of an `internal/server` package.
 
 Use it when an application needs to construct the production serving stack, mount API and UI surfaces, apply deployment base paths, or own listen and shutdown behavior.
 
-The server package is the production serving composition boundary. It receives resolved runtime config, opens runtime dependencies, constructs service/API/app packages, mounts route trees into one process router, applies deployment base paths, owns listen and shutdown behavior, and cleans up resources it opens. Pair this guide with `../config/README.md` for runtime resolution, `../service/README.md` for domain behavior, and `../api/README.md` for JSON HTTP contracts.
+The server package is the production serving composition boundary. It receives resolved runtime config, opens runtime dependencies, constructs service/API/web packages, mounts route trees into one process router, applies deployment base paths, owns listen and shutdown behavior, and cleans up resources it opens. Pair this guide with `../config/README.md` for runtime resolution, `../service/README.md` for domain behavior, `../api/README.md` for JSON HTTP contracts, and `../web/README.md` for server-rendered browser UIs.
 
 ## Required
 
@@ -36,7 +36,7 @@ The normal production flow is:
 3. the server opens the database and other runtime dependencies
 4. the server constructs `service.Service`
 5. the server constructs `api.API`
-6. the server constructs UI/app surfaces when present
+6. the server constructs web UI surfaces when present
 7. the server mounts all route trees into one root router
 8. the server listens and coordinates shutdown when needed
 
@@ -47,10 +47,10 @@ import (
 	"net/http"
 
 	"example/internal/api"
-	"example/internal/app"
 	"example/internal/config"
 	"example/internal/database"
 	"example/internal/service"
+	"example/internal/web"
 	"git.sr.ht/~jakintosh/command-go/pkg/wire"
 )
 
@@ -88,16 +88,16 @@ func Serve(
 		return err
 	}
 
-	appOpts := app.Options{
+	webOpts := web.Options{
 		Service: svc,
 	}
-	appServer, err := app.New(appOpts)
+	webServer, err := web.New(webOpts)
 	if err != nil {
 		return err
 	}
 
 	mux := http.NewServeMux()
-	wire.Subrouter(mux, "/", appServer.Router())
+	wire.Subrouter(mux, "/", webServer.Router())
 	wire.Subrouter(mux, "/api/v1", apiServer.Router())
 
 	return http.ListenAndServe(opts.Runtime.Server.ListenAddress, mux)
@@ -108,12 +108,12 @@ This keeps the split obvious:
 
 - service defines behavior
 - API defines the JSON HTTP surface
-- app/UI defines the rendered HTTP surface
+- web defines the rendered browser surface
 - server exposes those surfaces in one running process
 
 ## Deployment Mounting
 
-Treat API and app routers as inner route trees. Deployment-specific mounting belongs in `internal/server`.
+Treat API and web routers as inner route trees. Deployment-specific mounting belongs in `internal/server`.
 
 ```go
 func mountBasePath(

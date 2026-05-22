@@ -2,11 +2,7 @@
 
 This directory is a brief index of the architectural guides used across the style system.
 
-- [`app-view-models.md`](./app-view-models.md): This is the guide for shaping view models that sit between application logic and rendered UI.
-
 - [`public-packages.md`](./public-packages.md): This is the guide for deciding what belongs in public packages and how exported package surfaces should read.
-
-- [`server-rendered-htmx-ui.md`](./server-rendered-htmx-ui.md): This is the guide for building server-rendered HTMX interfaces and their application boundaries.
 
 - [`api/README.md`](./api/README.md): Use the API family for JSON HTTP endpoint structure, API DTOs, route composition, service calls, and HTTP responses.
   - [`api/error-mapping.md`](./api/error-mapping.md): Read this when handlers need consistent service-to-HTTP error translation rules.
@@ -47,3 +43,11 @@ This directory is a brief index of the architectural guides used across the styl
 
 - [`store/README.md`](./store/README.md): Use the store family for the service-owned persistence contract between domain code and adapters.
   - [`store/with-database.md`](./store/with-database.md): Read this when implementing those store contracts inside `internal/database`.
+
+- [`web/README.md`](./web/README.md): Use the web family for server-rendered browser interfaces, HTMX progressive enhancement, renderer/template boundaries, view models, forms, mutations, flash messages, static assets, and focused UI tests.
+  - [`web/view-models.md`](./web/view-models.md): Read this when shaping display-ready data for `html/template`.
+  - [`web/htmx-request-flow.md`](./web/htmx-request-flow.md): Read this when implementing full-page and fragment response behavior.
+  - [`web/renderer-and-templates.md`](./web/renderer-and-templates.md): Read this when defining renderer methods, named templates, fragments, and stable swap targets.
+  - [`web/forms-and-mutations.md`](./web/forms-and-mutations.md): Read this when implementing form validation, create/update/delete flows, redirects, HTMX mutation responses, or flash messages.
+  - [`web/testing.md`](./web/testing.md): Read this when testing web handlers, render-path parity, view models, fragments, and form responses.
+  - [`web/static-assets.md`](./web/static-assets.md): Read this when adding plain CSS, small enhancement JavaScript, or static file serving.
