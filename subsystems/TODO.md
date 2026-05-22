@@ -22,11 +22,12 @@ This document tracks the current queue of subsystem guides to write.
 - `cli/calling-api.md`
 - `api/with-keys.md`
 - `api/with-cors.md`
+- `users/README.md`
 
 ## Queued
 
 ## Notes
 
 - `makefiles/README.md` owns the local Makefile action surface.
-- Future subsystem drafts should follow `WRITING_SUBSYSTEM_GUIDES.md`.
+- Future subsystem drafts should follow `../meta/WRITING_SUBSYSTEM_GUIDES.md`.
 - New guides should be written from `RULE_INVENTORY_MATRIX.md`, not directly from the legacy source docs.

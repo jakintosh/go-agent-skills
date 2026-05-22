@@ -254,6 +254,16 @@ Capture states:
 | PKG-02 | Public packages should include `doc.go` with package-level documentation and usage guidance. | subsystem | `subsystems/public-packages.md` | required | `POLLINATOR_STYLE.md` Public libraries | clear in `consent/pkg/*` | extract |
 | PKG-03 | Keep public interfaces small and documented. | subsystem | `subsystems/public-packages.md` | required | `POLLINATOR_STYLE.md` Public libraries | visible in `pkg/client` and `pkg/tokens` | extract |
 
+## User accounts with Consent
+
+| ID | Rule | Scope | Future Owner | Designation | Current Source | Example Signal | Capture |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| USR-01 | Use Consent as the authentication, credential, grant, role, session, token, and profile authority. | subsystem | `subsystems/users/README.md` | required | `consent/README.md` and `consent/pkg/client` docs | Consent integration flow | keep |
+| USR-02 | Store a local account record keyed by Consent `sub`, and use the local account ID as the foreign key for application data. | subsystem | `subsystems/users/README.md` | required | `consent/README.md` integration guidance | successful integrated app shape | keep |
+| USR-03 | Treat handles and profile fields as cached display data, not durable identity. | subsystem | `subsystems/users/README.md` | required | `consent/README.md` integration guidance | account/profile cache shape | keep |
+| USR-04 | Construct Consent clients and mount Consent package handlers in the server composition root. | subsystem | `subsystems/users/README.md` | required | `consent/pkg/client` docs | callback/logout/manifest route wiring | keep |
+| USR-05 | Inject `client.Verifier` into `internal/web` and use Consent CSRF helpers for state-changing routes. | subsystem | `subsystems/users/README.md` | required | `consent/pkg/client` and `consent/pkg/testing` docs | web auth context and mutation flow | keep |
+
 ## Build and project action surface
 
 | ID | Rule | Scope | Future Owner | Designation | Current Source | Example Signal | Capture |

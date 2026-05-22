@@ -6,6 +6,8 @@ Use it when an application needs to construct the production serving stack, moun
 
 The server package is the production serving composition boundary. It receives resolved runtime config, opens runtime dependencies, constructs service/API/web packages, mounts route trees into one process router, applies deployment base paths, owns listen and shutdown behavior, and cleans up resources it opens. Pair this guide with `../config/README.md` for runtime resolution, `../service/README.md` for domain behavior, `../api/README.md` for JSON HTTP contracts, and `../web/README.md` for server-rendered browser UIs.
 
+If the serving stack needs Consent-backed user accounts, read `../users/README.md` for the auth-client wiring, account resolution, and package-handler mounts that belong in the composition root.
+
 ## Required
 
 - Keep config resolution outside `internal/server`; pass resolved runtime into server options.
@@ -176,6 +178,7 @@ Server tests should make it easy to verify:
 
 - the API tree is mounted at the intended production path
 - UI and API surfaces can coexist without route collisions
+- auth package handlers are mounted at the intended paths when the app uses user accounts
 - deployment base-path mounting preserves route behavior
 - shutdown behavior works when the serving shape includes it
 

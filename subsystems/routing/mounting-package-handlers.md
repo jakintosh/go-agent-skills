@@ -4,7 +4,7 @@ This guide defines how to compose package-owned HTTP handlers into your route tr
 
 Use it when a subsystem already exposes its own `http.Handler` and your API or server package needs to decide where that handler lives and what boundary protects it.
 
-Common examples include `command-go/pkg/keys` and `command-go/pkg/cors`, which expose package-owned management handlers that should be mounted into the application's API tree.
+Common examples include `command-go/pkg/keys` and `command-go/pkg/cors`, which expose package-owned management handlers that should be mounted into the application's API tree. Consent-backed applications also mount auth package handlers such as `/auth/callback`, `/auth/logout`, and `/.well-known/consent-integration`; read `../users/README.md` for that account setup path.
 
 ## Required
 

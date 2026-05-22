@@ -44,6 +44,8 @@ This directory is a brief index of the architectural guides used across the styl
 - [`store/README.md`](./store/README.md): Use the store family for the service-owned persistence contract between domain code and adapters.
   - [`store/with-database.md`](./store/with-database.md): Read this when implementing those store contracts inside `internal/database`.
 
+- [`users/README.md`](./users/README.md): Use this guide when a server application needs Consent-backed login, local account records, account-scoped domain data, or user-aware `internal/web` routes.
+
 - [`web/README.md`](./web/README.md): Use the web family for server-rendered browser interfaces, HTMX progressive enhancement, renderer/template boundaries, view models, forms, mutations, flash messages, static assets, and focused UI tests.
   - [`web/view-models.md`](./web/view-models.md): Read this when shaping display-ready data for `html/template`.
   - [`web/htmx-request-flow.md`](./web/htmx-request-flow.md): Read this when implementing full-page and fragment response behavior.

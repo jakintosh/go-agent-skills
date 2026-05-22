@@ -162,6 +162,13 @@ Candidate first-class guides:
   - OOB strategy
   - progressive enhancement contract
 
+- `subsystems/users/README.md`
+  - Consent-backed login
+  - local account records
+  - account-scoped service and database methods
+  - web auth context and CSRF flow
+  - integration manifest and callback handler mounting
+
 - `subsystems/app-view-models.md`
   - per-concern `view_*.go`
   - pure mapping functions
@@ -264,6 +271,12 @@ Extract into:
 Potentially split out:
 
 - reference/checklists/frontend-htmx
+
+### From Consent and integrated applications
+
+Extract into:
+
+- subsystems/users/README.md
 
 ## Example repo mapping
 

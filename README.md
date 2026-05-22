@@ -65,6 +65,7 @@ Focused guides for one architectural job at a time, such as:
 - router composition
 - config systems
 - database adapters
+- user accounts with Consent
 - API tests
 - server-rendered UI structure
 
@@ -86,7 +87,7 @@ A few files act as internal control documents while the system is being built:
   - outlines the overall document architecture
 - `RULE_INVENTORY_MATRIX.md`
   - tracks the extracted rules, their future owners, and whether they are required, default, or optional patterns
-- `subsystems/WRITING_SUBSYSTEM_GUIDES.md`
+- `meta/WRITING_SUBSYSTEM_GUIDES.md`
   - captures the writing standard for future subsystem guides
 - `subsystems/TODO.md`
   - tracks which subsystem guides are drafted and which are still queued

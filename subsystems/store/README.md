@@ -145,6 +145,7 @@ Keep the same rules in both cases:
 - `subsystems/service/README.md` for service package ownership and constructor shape
 - `subsystems/api/README.md` for API handler and DTO responsibilities
 - `subsystems/database/README.md` for SQL adapter mechanics
+- `subsystems/users/README.md` for account-scoped store methods and local account IDs
 
 ## Testing Expectations
 

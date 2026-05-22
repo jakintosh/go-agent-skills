@@ -6,6 +6,8 @@ Use it when a Go service binary needs to expose a small web interface alongside 
 
 The web package owns the browser-facing HTML surface. It defines UI route composition, handlers, typed view models, renderer methods, `html/template` templates, HTMX request handling, form responses, flash messages, and static assets. Keep domain behavior in `internal/service`, JSON API contracts in `internal/api`, and production mounting in `internal/server`.
 
+If the UI needs logged-in users, account-scoped routes, or CSRF-protected Consent cookies, read `../users/README.md` before shaping the web constructor and auth context.
+
 ## Required
 
 - Use `internal/web` for the server-rendered browser UI.
@@ -387,5 +389,6 @@ Read `./testing.md` for focused web UI test shape.
 
 - Read `../service/README.md` for domain behavior and service contracts.
 - Read `../server/README.md` for mounting the web router into the production serving stack.
+- Read `../users/README.md` when the web UI needs Consent-backed accounts, login/logout links, or account-scoped mutations.
 - Read `../api/README.md` when the same application also exposes JSON HTTP endpoints.
 - Read `../routing/README.md` when composing route trees across packages.

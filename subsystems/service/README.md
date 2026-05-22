@@ -192,6 +192,7 @@ Some services need additional structure beyond the default path.
 
 - If startup must initialize durable mutable state explicitly, read `./bootstrap-initialization.md`.
 - If the service owns long-lived background work, read `./lifecycle-hooks.md`.
+- If domain data belongs to logged-in users, read `../users/README.md` for account records, local account IDs, and account-scoped service inputs.
 - If you need JSON HTTP endpoint structure, read `../api/README.md`.
 - If the API uses `command-go/pkg/keys`, read `../api/with-keys.md`.
 - If you need production serving composition, read `../server/README.md`.
