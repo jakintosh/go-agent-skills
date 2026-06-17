@@ -1,6 +1,6 @@
 # Integrating API Key Management
 
-**Package:** `git.sr.ht/~jakintosh/command-go@v0.5.0`
+**Package:** `git.sr.ht/~jakintosh/command-go/pkg/keys`
 
 Use this guide when an API uses `command-go/pkg/keys` for API-key creation, verification, authorization, HTTP middleware, and remote CLI management.
 
@@ -22,29 +22,31 @@ Permissions express domain authorization, so keep their declarations in `interna
 
 ```go
 const (
-	PermissionRead  keys.PermissionKey = "read"
-	PermissionWrite keys.PermissionKey = "write"
-	PermissionAdmin keys.PermissionKey = "admin"
+	PermissionRead  keys.Permission = "read"
+	PermissionWrite keys.Permission = "write"
+	PermissionAdmin keys.Permission = "admin"
 )
 
-var KeyPermissions = keys.Permissions{
-	{
+var KeyCatalog = keys.MustCatalog(
+	keys.PermissionDef{
 		Key:         PermissionRead,
 		Display:     "Read",
 		Description: "Read documents",
 	},
-	{
+	keys.PermissionDef{
 		Key:         PermissionWrite,
 		Display:     "Write",
 		Description: "Create and update documents",
 	},
-	{
+	keys.PermissionDef{
 		Key:         PermissionAdmin,
 		Display:     "Admin",
 		Description: "Manage settings and API keys",
 	},
-}
+)
 ```
+
+`keys.Catalog` is code-owned permission metadata. The database stores granted permission keys, but the display names and descriptions live in application code.
 
 ## Database Store
 
@@ -111,8 +113,8 @@ func New(
 	}
 
 	keysOpts := keys.Options{
-		Store:       opts.Keys,
-		Permissions: service.KeyPermissions,
+		Store:   opts.Keys,
+		Catalog: service.KeyCatalog,
 	}
 	keySvc, err := keys.New(keysOpts)
 	if err != nil {
@@ -132,8 +134,8 @@ Mount package-owned key routes inside the API tree and apply authorization at th
 
 ```go
 type Middleware struct {
-	auth     func(http.Handler, ...keys.PermissionKey) http.Handler
-	authFunc func(http.HandlerFunc, ...keys.PermissionKey) http.HandlerFunc
+	auth     func(http.Handler, ...keys.Permission) http.Handler
+	authFunc func(http.HandlerFunc, ...keys.Permission) http.HandlerFunc
 }
 
 func (a *API) Router() http.Handler {
@@ -166,8 +168,8 @@ func runInit(
 	opts InitOptions,
 ) error {
 	keyOpts := keys.Options{
-		Store:       opts.Keys,
-		Permissions: service.KeyPermissions,
+		Store:   opts.Keys,
+		Catalog: service.KeyCatalog,
 	}
 	keySvc, err := keys.New(keysOpts)
 	if err != nil {
@@ -178,7 +180,25 @@ func runInit(
 }
 ```
 
-Use `keys.GenerateBootstrapKey()` when the application needs to generate a bootstrap token. Store and load that token through the config or secret mechanism appropriate for the project.
+Use `keys.GenerateBootstrapToken()` when the application needs to generate a bootstrap token. To grant the bootstrap token every configured permission, call `keySvc.Init(token, service.KeyCatalog.Permissions()...)`. Store and load the token through the config or secret mechanism appropriate for the project.
+
+Use `keySvc.Reinitialize(...)` only for an explicit reset flow that should atomically replace all stored API keys.
+
+## Permission Migrations
+
+Permission keys are stable identifiers. When an application renames, splits, merges, or removes permission keys, migrate `keys_grants.permission_key` in the same database migration sequence that introduces the catalog change.
+
+Use the package helpers inside the application migration transaction:
+
+```go
+func migrateReportsPermission(
+	tx *sql.Tx,
+) error {
+	return keys.RenameGrant(tx, "reports.read", "reports.view")
+}
+```
+
+Other helpers are available for mechanical changes: `keys.CopyGrant(...)`, `keys.ReplaceGrant(...)`, and `keys.DeleteGrant(...)`. These helpers do not validate against a catalog or manage the transaction lifecycle.
 
 ## CLI Management
 

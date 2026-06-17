@@ -1,7 +1,7 @@
 # Integrating CLI Root with `command-go/pkg/version`
 
 **Pre-requisite:** `./README.md`
-**Package:** `git.sr.ht/~jakintosh/command-go@v0.5.0`
+**Package:** `git.sr.ht/~jakintosh/command-go/pkg/version`
 
 Use this guide when a binary should expose build metadata through a standard `version` subcommand.
 

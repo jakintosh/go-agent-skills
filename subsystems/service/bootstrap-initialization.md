@@ -91,28 +91,28 @@ When initialization and runtime behavior share permission declarations or simila
 
 ```go
 const (
-	PermissionRead  keys.PermissionKey = "read"
-	PermissionWrite keys.PermissionKey = "write"
-	PermissionAdmin keys.PermissionKey = "admin"
+	PermissionRead  keys.Permission = "read"
+	PermissionWrite keys.Permission = "write"
+	PermissionAdmin keys.Permission = "admin"
 )
 
-var KeyPermissions = keys.Permissions{
-	{
+var KeyCatalog = keys.MustCatalog(
+	keys.PermissionDef{
 		Key:         PermissionRead,
 		Display:     "Read",
 		Description: "Read project data",
 	},
-	{
+	keys.PermissionDef{
 		Key:         PermissionWrite,
 		Display:     "Write",
 		Description: "Create and update project data",
 	},
-	{
+	keys.PermissionDef{
 		Key:         PermissionAdmin,
 		Display:     "Admin",
 		Description: "Manage settings and API keys",
 	},
-}
+)
 ```
 
 This keeps middleware, initialization, and tests aligned on the same permission vocabulary

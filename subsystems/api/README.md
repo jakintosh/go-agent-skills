@@ -82,8 +82,8 @@ func New(
 	}
 
 	keyOpts := keys.Options{
-		Store:       opts.Keys,
-		Permissions: service.KeyPermissions,
+		Store:   opts.Keys,
+		Catalog: service.KeyCatalog,
 	}
 	keysSvc, err := keys.New(keyOpts)
 	if err != nil {

@@ -40,14 +40,14 @@ BASE_URL ?= http://localhost:$(PORT)
 .PHONY: help build generate test fmt vet lint install init run clean reset
 
 help:
-	printf "Targets:\n"
-	printf "  build    Build $(BIN)\n"
-	printf "  test     Run tests\n"
-	printf "  install  Install the CLI binary\n"
-	printf "  init     Create local config and data\n"
-	printf "  run      Run the local service\n"
-	printf "  clean    Remove build and test artifacts\n"
-	printf "  reset    Remove local runtime state\n"
+	@printf "Targets:\n"
+	@printf "  build    Build $(BIN)\n"
+	@printf "  test     Run tests\n"
+	@printf "  install  Install the CLI binary\n"
+	@printf "  init     Create local config and data\n"
+	@printf "  run      Run the local service\n"
+	@printf "  clean    Remove build and test artifacts\n"
+	@printf "  reset    Remove local runtime state\n"
 
 build: generate
 	mkdir -p $(BIN_DIR)
@@ -93,7 +93,9 @@ reset:
 	rm -rf $(CONFIG_DIR) $(DATA_DIR)
 ```
 
-The example is intentionally complete. Smaller projects should keep the same shape and include only the targets their workflows actually use. Start with at least `help`, build`, `test`, and `lint`, and add from there as needed.
+The example is intentionally complete. Smaller projects should keep the same shape and include only the targets their workflows actually use. Start with at least `help`, `build`, `test`, and `lint`, and add from there as needed.
+
+The `help` target is the only recipe that should silence its commands by default, so `make` prints the target list instead of the `printf` commands. Keep operational targets visible unless there is a specific reason to hide a command.
 
 ## Target Names
 

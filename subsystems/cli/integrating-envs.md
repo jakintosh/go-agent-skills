@@ -1,7 +1,7 @@
 # Integrating CLI Root with `command-go/pkg/envs`
 
 **Pre-requisite:** `./README.md`
-**Package:** `git.sr.ht/~jakintosh/command-go@v0.5.0`
+**Package:** `git.sr.ht/~jakintosh/command-go/pkg/envs`
 
 Use this guide when a CLI calls an HTTP API and needs named environments for base URL and API key pairs.
 

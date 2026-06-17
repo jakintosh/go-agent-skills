@@ -1,6 +1,6 @@
 # Integrating CORS Origin Management
 
-**Package:** `git.sr.ht/~jakintosh/command-go@v0.5.0`
+**Package:** `git.sr.ht/~jakintosh/command-go/pkg/cors`
 
 Use this guide when an API uses `command-go/pkg/cors` for dynamic CORS origin whitelisting, CORS middleware, HTTP management routes, and remote CLI management.
 
@@ -101,7 +101,7 @@ Add CORS middleware to the API middleware bundle and apply it where browser call
 
 ```go
 type Middleware struct {
-	auth     func(http.Handler, ...keys.PermissionKey) http.Handler
+	auth     func(http.Handler, ...keys.Permission) http.Handler
 	cors     func(http.Handler) http.Handler
 	corsFunc func(http.HandlerFunc) http.HandlerFunc
 }
@@ -136,6 +136,14 @@ func (a *API) buildSettingsRouter() http.Handler {
 ```
 
 If the project uses method-specific `http.ServeMux` patterns, make sure preflight `OPTIONS` requests reach the CORS middleware for the route being protected.
+
+## Middleware Behavior
+
+`WithCORS` checks the request `Origin` against the stored allow-list. For allowed origins it sets `Access-Control-Allow-Origin` to the request origin and adds `Vary: Origin`. Requests with no origin, or with a disallowed non-preflight origin, continue to the wrapped handler without CORS allow headers.
+
+A request is treated as preflight only when it is `OPTIONS` and includes both `Origin` and `Access-Control-Request-Method`. Allowed preflight requests return `204`, set `Access-Control-Allow-Methods` to the requested method, and echo allowed requested headers in `Access-Control-Allow-Headers`.
+
+The built-in preflight allow-list accepts methods `GET`, `HEAD`, `POST`, `PUT`, `PATCH`, `DELETE`, and `OPTIONS`; it accepts request headers `Accept`, `Authorization`, and `Content-Type` case-insensitively. Disallowed preflight origins, methods, or headers return `403`. Non-preflight `OPTIONS` requests pass through to the wrapped handler.
 
 ## Bootstrap Origins
 
@@ -189,7 +197,9 @@ Cover:
 
 - API construction rejects missing CORS store dependencies.
 - allowed origins receive CORS headers.
-- disallowed preflight requests return the expected failure status.
+- allowed preflight requests return `204` and echo the requested method and allowed headers.
+- disallowed preflight origins, methods, or headers return `403`.
+- non-preflight `OPTIONS` requests pass through to the wrapped handler.
 - preflight tests include `Origin` and `Access-Control-Request-Method` headers.
 - package handler routes are mounted at the intended settings path.
 - CLI CORS commands receive the same collection path exposed by the server.

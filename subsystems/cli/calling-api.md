@@ -1,7 +1,7 @@
 # Calling an API from a CLI
 
 **Pre-requisite:** `./README.md`
-**Package:** `git.sr.ht/~jakintosh/command-go@v0.5.0`
+**Package:** `git.sr.ht/~jakintosh/command-go/pkg/wire`
 
 Use this guide when a CLI command calls a JSON HTTP API with `command-go/pkg/wire`.
 

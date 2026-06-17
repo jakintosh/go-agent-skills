@@ -17,8 +17,8 @@ Prefer a bundle that supports both subtree and direct-route wrapping:
 
 ```go
 type Middleware struct {
-	auth     func(http.Handler, ...keys.PermissionKey) http.Handler
-	authFunc func(http.HandlerFunc, ...keys.PermissionKey) http.HandlerFunc
+	auth     func(http.Handler, ...keys.Permission) http.Handler
+	authFunc func(http.HandlerFunc, ...keys.Permission) http.HandlerFunc
 	cors     func(http.Handler) http.Handler
 	corsFunc func(http.HandlerFunc) http.HandlerFunc
 }
@@ -63,6 +63,7 @@ func (a *API) buildDocumentRouter(
 ) http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /", mw.corsFunc(a.handleListDocuments))
+	mux.HandleFunc("OPTIONS /", mw.corsFunc(a.handleListDocuments))
 	mux.HandleFunc("POST /", mw.authFunc(a.handleCreateDocument, service.PermissionWrite))
 	return mux
 }

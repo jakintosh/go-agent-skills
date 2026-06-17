@@ -80,8 +80,10 @@ func (a *API) buildDocumentRouter(
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("GET /", mw.corsFunc(a.handleListDocuments))
+	mux.HandleFunc("OPTIONS /", mw.corsFunc(a.handleListDocuments))
 	mux.HandleFunc("POST /", mw.authFunc(a.handleCreateDocument, service.PermissionWrite))
 	mux.HandleFunc("GET /{document_id}", mw.corsFunc(a.handleGetDocument))
+	mux.HandleFunc("OPTIONS /{document_id}", mw.corsFunc(a.handleGetDocument))
 
 	return mux
 }

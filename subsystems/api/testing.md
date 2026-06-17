@@ -247,6 +247,6 @@ For each endpoint family, cover the relevant subset of:
 - pagination or filter parsing
 - meaningful state transitions or idempotency behavior
 
-Include focused middleware tests where behavior matters. For CORS preflight tests, include the expected method request header on `OPTIONS` requests.
+Include focused middleware tests where behavior matters. For CORS preflight tests, include `Origin` and `Access-Control-Request-Method` on `OPTIONS` requests. Cover allowed preflight success, disallowed origin/method/header failures, and non-preflight `OPTIONS` pass-through when those routes are browser-facing.
 
 Avoid redundant tests that change only literal data values without changing behavior.

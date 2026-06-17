@@ -1,8 +1,16 @@
 # Building a CLI Command Tree
 
-**Package:** `git.sr.ht/~jakintosh/command-go@v0.5.0`
+**Package:** `git.sr.ht/~jakintosh/command-go/pkg/args`
 
 This guide defines the standard shape for CLI command trees in the Studio Pollinator style system, using the `git.sr.ht/~jakintosh/command-go/pkg/args` package.
+
+Use the latest compatible release of `git.sr.ht/~jakintosh/command-go` when starting or updating a project:
+
+```sh
+go get git.sr.ht/~jakintosh/command-go@latest
+```
+
+The examples intentionally omit a module version so readers do not copy a stale pin from the guide. Let the project's `go.mod` record the selected version.
 
 It focuses on how commands are organized, where environment and config concerns live, and how handlers should read when a binary exposes several operational surfaces.
 
