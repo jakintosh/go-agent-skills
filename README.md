@@ -79,18 +79,7 @@ Supporting material such as:
 - examples indexes
 - implementation notes
 
-## Working documents
-
-A few files act as internal control documents while the system is being built:
-
-- `GUIDE_SYSTEM_PLAN.md`
-  - outlines the overall document architecture
-- `RULE_INVENTORY_MATRIX.md`
-  - tracks the extracted rules, their future owners, and whether they are required, default, or optional patterns
-- `meta/WRITING_SUBSYSTEM_GUIDES.md`
-  - captures the writing standard for future subsystem guides
-- `subsystems/TODO.md`
-  - tracks which subsystem guides are drafted and which are still queued
+For guidance on how to work on the style system — writing guides, understanding conventions, and what work remains — see [`CONTRIBUTING.md`](CONTRIBUTING.md).
 
 ## Project goal
 
@@ -106,10 +95,4 @@ The goal is to codify the style in a form that is:
 
 ## Current state
 
-This repository is still in the process of extraction and restructuring.
-
-Some documents are legacy source material.
-Some are new subsystem guides.
-Some are planning and control documents used to drive the transition.
-
-Over time, the center of gravity should move away from the legacy broad guides and toward the new foundation, subsystem, and reference structure.
+The subsystem guides are largely complete. The remaining work is filling out the [`foundations/`](foundations/) and [`reference/`](reference/) areas — see [`CONTRIBUTING.md`](CONTRIBUTING.md) for details.
