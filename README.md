@@ -1,6 +1,6 @@
-# Pollinator Style
+# Pollinator Go
 
-Pollinator Style is a plugin for agentic coding harnesses containing Studio Pollinator's opinionated Go engineering guidance.
+Pollinator Go is a plugin for agentic coding harnesses containing Studio Pollinator's opinionated Go engineering guidance.
 
 The plugin uses progressive disclosure so ordinary design, implementation, debugging, testing, and review tasks can draw on detailed guidance without loading the entire knowledge base. Skill metadata identifies relevant domains, each `SKILL.md` selects the applicable concerns, and focused references supply detailed rules and examples only when needed.
 
@@ -21,8 +21,8 @@ Support for additional harnesses is added by contributing another install mechan
 OpenCode has no plugin manifest, so it discovers skills by directory. Clone this repository and run the install script to copy the skills into OpenCode's user skill directory:
 
 ```sh
-git clone https://git.studiopollinator.com/pollinator/style.git
-cd style
+git clone git@git.studiopollinator.com:pollinator/go-agent-skills
+cd go-agent-skills
 ./install_opencode.sh
 ```
 

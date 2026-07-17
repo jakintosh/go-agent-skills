@@ -1,12 +1,12 @@
 {
-  "name": "style",
+  "name": "pollinator-go",
   "version": "0.1.0",
   "description": "Opinionated Go engineering guidance from Studio Pollinator",
   "author": {
     "name": "Studio Pollinator"
   },
-  "homepage": "https://git.sr.ht/~jakintosh/style",
-  "repository": "https://git.sr.ht/~jakintosh/style",
+  "homepage": "https://git.studiopollinator.com/pollinator/go-agent-skills",
+  "repository": "https://git.studiopollinator.com/pollinator/go-agent-skills",
   "keywords": [
     "go",
     "architecture",
@@ -15,7 +15,7 @@
   ],
   "skills": "./skills/",
   "interface": {
-    "displayName": "Pollinator Style",
+    "displayName": "Pollinator Go",
     "shortDescription": "Opinionated guidance for Go application architecture.",
     "longDescription": "A progressively disclosed knowledge system for designing, modifying, testing, and reviewing Go applications in the Studio Pollinator style.",
     "developerName": "Studio Pollinator",
@@ -26,8 +26,8 @@
     ],
     "defaultPrompt": [
       "Use $configure-pollinator-style to configure this repository.",
-      "Use Pollinator Style to guide this Go change.",
-      "Review this Go code against Pollinator Style."
+      "Use Pollinator Go to guide this Go change.",
+      "Review this Go code against Pollinator Go."
     ]
   }
 }

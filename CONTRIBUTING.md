@@ -1,6 +1,6 @@
 # Contributing
 
-This document defines how to maintain the Pollinator Style plugin and its domain skills.
+This document defines how to maintain the Pollinator Go plugin and its domain skills.
 
 ## Repository structure
 

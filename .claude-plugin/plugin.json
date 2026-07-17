@@ -1,13 +1,13 @@
 {
-  "name": "pollinator-style",
-  "displayName": "Pollinator Style",
+  "name": "pollinator-go",
+  "displayName": "Pollinator Go",
   "version": "0.1.0",
   "description": "Opinionated Go engineering guidance from Studio Pollinator",
   "author": {
     "name": "Studio Pollinator"
   },
-  "homepage": "https://git.sr.ht/~jakintosh/style",
-  "repository": "https://git.sr.ht/~jakintosh/style",
+  "homepage": "https://git.studiopollinator.com/pollinator/go-agent-skills",
+  "repository": "https://git.studiopollinator.com/pollinator/go-agent-skills",
   "keywords": [
     "go",
     "architecture",

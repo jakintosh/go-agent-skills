@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Install (or uninstall) Pollinator Style skills for OpenCode.
+# Install (or uninstall) Pollinator Go skills for OpenCode.
 #
 # OpenCode has no plugin manifest; it discovers skills by directory. This copies
 # every skill under skills/ into OpenCode's user skill directory
@@ -19,8 +19,8 @@ case "${1:-}" in
   --uninstall) uninstall=1 ;;
   -h | --help)
     echo "Usage: $(basename "$0") [--uninstall]"
-    echo "  (default)    copy Pollinator Style skills into $dest_dir"
-    echo "  --uninstall  remove the Pollinator Style skills from that directory"
+    echo "  (default)    copy Pollinator Go skills into $dest_dir"
+    echo "  --uninstall  remove the Pollinator Go skills from that directory"
     exit 0
     ;;
   "") ;;
