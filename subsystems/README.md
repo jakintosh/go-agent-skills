@@ -45,6 +45,10 @@ This directory is a brief index of the architectural guides used across the styl
   - [`store/with-database.md`](./store/with-database.md): Read this when implementing those store contracts inside `internal/database`.
 
 - [`users/README.md`](./users/README.md): Use this guide when a server application needs Consent-backed login, local account records, account-scoped domain data, or user-aware `internal/web` routes.
+  - [`users/account-resolution.md`](./users/account-resolution.md): Read this when implementing `internal/web` auth context, local account lookup, scoped profile refresh, protected mutations, or CSRF handling.
+  - [`users/integration-config.md`](./users/integration-config.md): Read this when building the production Consent client, app-side integration config, manifest handler, authorize URL, and verification-key loading.
+  - [`users/local-testing.md`](./users/local-testing.md): Read this when using Consent's `pkg/testing` helpers for route tests, CSRF tests, fake profile data, or local dev auth.
+  - [`users/production-deployment.md`](./users/production-deployment.md): Read this when documenting production deployment, Consent registration, mounted verification keys, reverse proxy paths, or operator verification.
 
 - [`web/README.md`](./web/README.md): Use the web family for server-rendered browser interfaces, HTMX progressive enhancement, renderer/template boundaries, view models, forms, mutations, flash messages, static assets, and focused UI tests.
   - [`web/view-models.md`](./web/view-models.md): Read this when shaping display-ready data for `html/template`.
