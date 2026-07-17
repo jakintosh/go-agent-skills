@@ -1,0 +1,17 @@
+{
+  "name": "pollinator-style",
+  "displayName": "Pollinator Style",
+  "version": "0.1.0",
+  "description": "Opinionated Go engineering guidance from Studio Pollinator",
+  "author": {
+    "name": "Studio Pollinator"
+  },
+  "homepage": "https://git.sr.ht/~jakintosh/style",
+  "repository": "https://git.sr.ht/~jakintosh/style",
+  "keywords": [
+    "go",
+    "architecture",
+    "engineering-style",
+    "database"
+  ]
+}

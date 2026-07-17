@@ -1,12 +1,26 @@
 # Pollinator Style
 
-Pollinator Style is a Codex plugin containing Studio Pollinator's opinionated Go engineering guidance.
+Pollinator Style is a plugin for agentic coding harnesses containing Studio Pollinator's opinionated Go engineering guidance.
 
 The plugin uses progressive disclosure so ordinary design, implementation, debugging, testing, and review tasks can draw on detailed guidance without loading the entire knowledge base. Skill metadata identifies relevant domains, each `SKILL.md` selects the applicable concerns, and focused references supply detailed rules and examples only when needed.
+
+## Supported harnesses
+
+The knowledge base is a set of harness-agnostic skills. Each supported harness discovers them through its own manifest and, when configured, routes to them through its own guidance file.
+
+| Harness | Manifest | Guidance file |
+| --- | --- | --- |
+| Claude Code | `.claude-plugin/plugin.json` | `CLAUDE.md` |
+| Codex | `.codex-plugin/plugin.json` | `AGENTS.md` |
+
+Support for additional harnesses is added by contributing another manifest and a configurator branch; see [`CONTRIBUTING.md`](CONTRIBUTING.md). Everything under `skills/` is shared across harnesses unchanged.
 
 ## Repository structure
 
 ```text
+.claude-plugin/
+  plugin.json
+  marketplace.json
 .codex-plugin/
   plugin.json
 skills/
@@ -20,7 +34,7 @@ skills/
     references/
 ```
 
-The root manifest discovers every skill under `skills/`. Domain knowledge lives in the narrowest reference that owns the concern, while `SKILL.md` files contain activation boundaries, universal invariants, reference routing, adjacent-domain routing, and validation behavior.
+Each harness's manifest discovers every skill under `skills/`. Domain knowledge lives in the narrowest reference that owns the concern, while `SKILL.md` files contain activation boundaries, universal invariants, reference routing, adjacent-domain routing, and validation behavior. Per-skill `agents/openai.yaml` files carry Codex interface metadata and are ignored by harnesses that do not use them.
 
 ## Skill catalog
 
@@ -38,25 +52,25 @@ The root manifest discovers every skill under `skills/`. Domain knowledge lives 
 | [`design-go-public-packages`](skills/design-go-public-packages/SKILL.md) | Deliberate `pkg/` APIs, exported compatibility surfaces, package docs, and external reuse |
 | [`work-with-go-makefiles`](skills/work-with-go-makefiles/SKILL.md) | Go project Makefile targets, workflows, variables, cleanup, and help output |
 
-[`configure-pollinator-style`](skills/configure-pollinator-style/SKILL.md) manages persistent ambient routing in Codex guidance.
+[`configure-pollinator-style`](skills/configure-pollinator-style/SKILL.md) manages persistent ambient routing in a harness's guidance file.
 
 ## Configure ambient routing
 
-After installing and enabling the plugin, configure the current repository with:
+After installing and enabling the plugin, configure the current repository by asking your agent:
 
-> Use `$configure-pollinator-style` to configure this repository.
+> Configure this repository for Pollinator Style.
 
-The setup skill discovers the active Codex instruction file, preserves its existing content, and manages one marked Pollinator Style block. The block tells Codex to inspect the code, select every materially affected skill from its description, load only relevant references, and reconsider selection as scope emerges.
+The setup skill runs for the harness you are using, discovers that harness's active guidance file, preserves its existing content, and manages one marked Pollinator Style block. The block tells the agent to inspect the code, select every materially affected skill from its description, load only relevant references, and reconsider selection as scope emerges.
 
 Repository scope is the default. For global behavior, ask explicitly:
 
-> Use `$configure-pollinator-style` to configure my global Codex guidance.
+> Configure Pollinator Style for my global agent guidance.
 
 To remove the managed block while preserving other instructions:
 
-> Use `$configure-pollinator-style` to remove Pollinator Style routing from this repository.
+> Remove Pollinator Style routing from this repository.
 
-The configurator reports the guidance file, whether it changed, the resulting action, and a short explanation of implicit routing. Start a new Codex task whenever the guidance file changes.
+The configurator reports the harness, the guidance file, whether it changed, the resulting action, and a short explanation of implicit routing. Start a new session in that harness whenever the guidance file changes.
 
 ## Contributing
 

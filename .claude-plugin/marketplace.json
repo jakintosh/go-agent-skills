@@ -1,0 +1,21 @@
+{
+  "name": "studio-pollinator",
+  "owner": {
+    "name": "Studio Pollinator"
+  },
+  "description": "Studio Pollinator's engineering-style plugins.",
+  "plugins": [
+    {
+      "name": "pollinator-style",
+      "source": "./",
+      "description": "Opinionated Go engineering guidance from Studio Pollinator",
+      "category": "Developer Tools",
+      "keywords": [
+        "go",
+        "architecture",
+        "engineering-style",
+        "database"
+      ]
+    }
+  ]
+}

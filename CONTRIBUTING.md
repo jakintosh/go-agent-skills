@@ -5,6 +5,9 @@ This document defines how to maintain the Pollinator Style plugin and its domain
 ## Repository structure
 
 ```text
+.claude-plugin/
+  plugin.json
+  marketplace.json
 .codex-plugin/
   plugin.json
 skills/
@@ -14,11 +17,22 @@ skills/
     references/
 ```
 
-- [`.codex-plugin/plugin.json`](.codex-plugin/plugin.json) defines the installable plugin and discovers `skills/`.
-- [`skills/`](skills/) contains the setup skill, domain skills, and selectively loaded knowledge.
+- Each harness has its own manifest that discovers `skills/`: [`.claude-plugin/plugin.json`](.claude-plugin/plugin.json) for Claude Code and [`.codex-plugin/plugin.json`](.codex-plugin/plugin.json) for Codex.
+- [`skills/`](skills/) contains the setup skill, domain skills, and selectively loaded knowledge, shared across every harness.
 - Each domain skill owns its detailed guidance. Do not duplicate the same rule or example across skills.
 
-[`configure-pollinator-style`](skills/configure-pollinator-style/SKILL.md) is an operational setup skill. It owns the managed `AGENTS.md` block and the completion message shown after configuration. Keep its router text, script behavior, README onboarding, and result vocabulary synchronized.
+[`configure-pollinator-style`](skills/configure-pollinator-style/SKILL.md) is an operational setup skill. It owns the managed routing block written into each harness's guidance file and the completion message shown after configuration. Keep its router text, script behavior, README onboarding, and result vocabulary synchronized.
+
+## Harness support
+
+The skills are harness-agnostic; only a thin surface differs per harness. When adding or maintaining harness support, keep these pieces in sync:
+
+- **Manifest.** Each harness discovers `skills/` through its own manifest directory (`.claude-plugin/`, `.codex-plugin/`). Add one manifest per harness; do not move or rename `skills/`.
+- **Guidance file.** The configurator writes the marked routing block into the harness's guidance file — `CLAUDE.md` for Claude Code, `AGENTS.md` for Codex. Harness-specific precedence rules (Codex's `AGENTS.override.md` and `project_doc_fallback_filenames`) are handled only in that harness's branch.
+- **Configurator branch.** [`scripts/configure_routing.py`](skills/configure-pollinator-style/scripts/configure_routing.py) selects a harness with the required `--harness` flag. Add a new harness by registering it in the `HARNESSES` table with its guidance filename, home environment variable, and default home; the shared marker-block logic then applies unchanged.
+- **Per-skill interface metadata.** `agents/openai.yaml` is Codex-only interface metadata. Harnesses that do not use it (such as Claude Code) ignore it. It is the one place where the Codex `$skill-name` invocation syntax is intentionally retained.
+
+Keep everything else — `SKILL.md` bodies, references, and the README — written for agentic harnesses in general, naming a specific harness only in a dedicated harness section or a small callout where a detail genuinely differs.
 
 ## Skill boundaries
 
@@ -68,13 +82,13 @@ Detailed integration guidance belongs with the consuming domain. Provider skills
 
 ## Agent metadata
 
-Every skill should include `agents/openai.yaml` with:
+Every skill should include Codex interface metadata at `agents/openai.yaml` with:
 
 - a human-readable display name
 - a 25–64 character short description
-- a short default prompt that explicitly names the skill with `$skill-name`
+- a short default prompt that explicitly names the skill with Codex's `$skill-name` invocation syntax
 
-Enable implicit invocation by default. Add scripts, assets, or tool dependencies only when the skill uses them.
+This file is Codex-specific; other harnesses discover the skill from its `SKILL.md` frontmatter and ignore it. Enable implicit invocation by default. Add scripts, assets, or tool dependencies only when the skill uses them.
 
 ## Writing principles
 
@@ -93,10 +107,12 @@ Run the skill creator's `quick_validate.py` against every changed skill and the 
 
 Also verify that:
 
+- every harness manifest (`.claude-plugin/plugin.json`, `.codex-plugin/plugin.json`) is valid JSON and still discovers `skills/`
+- the configurator produces the expected result for each supported harness at repository and global scope (use `--dry-run`)
 - every `SKILL.md` links directly to every owned reference
 - every local Markdown link resolves
 - every reference longer than 100 lines has a contents list near the top
 - frontmatter contains only `name` and `description`
-- every default prompt names its skill
+- every Codex default prompt names its skill
 - no scaffold placeholders or trailing whitespace remain
 - representative prompts activate the intended skills without loading unrelated domains

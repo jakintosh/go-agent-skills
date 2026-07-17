@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
-"""Safely configure Pollinator Style routing in Codex guidance files."""
+"""Safely configure Pollinator Style routing in an agentic harness's guidance file.
+
+One invocation targets exactly one harness, chosen with the required ``--harness``
+flag. Each harness declares where its guidance lives and which harness-specific
+files take precedence; the marker-block insert/update/remove logic is shared.
+"""
 
 from __future__ import annotations
 
@@ -11,7 +16,7 @@ from pathlib import Path
 import re
 import stat
 import tempfile
-from typing import Any
+from typing import Any, Callable
 
 
 START_MARKER = "<!-- pollinator-style:start -->"
@@ -30,28 +35,77 @@ Do not wait for the user to name a skill explicitly.
 <!-- pollinator-style:end -->"""
 
 
+class Harness:
+    """Per-harness description of where routing guidance lives.
+
+    A harness owns its guidance filename and global home. ``override_name`` and
+    ``uses_fallbacks`` capture harness-specific precedence rules; harnesses
+    without those concepts leave them unset and skip the related logic.
+    """
+
+    def __init__(
+        self,
+        name: str,
+        guidance_filename: str,
+        home_env: str,
+        default_home: Callable[[], Path],
+        override_name: str | None = None,
+        uses_fallbacks: bool = False,
+    ) -> None:
+        self.name = name
+        self.guidance_filename = guidance_filename
+        self.home_env = home_env
+        self.default_home = default_home
+        self.override_name = override_name
+        self.uses_fallbacks = uses_fallbacks
+
+
+HARNESSES: dict[str, Harness] = {
+    "codex": Harness(
+        name="codex",
+        guidance_filename="AGENTS.md",
+        home_env="CODEX_HOME",
+        default_home=lambda: Path.home() / ".codex",
+        override_name="AGENTS.override.md",
+        uses_fallbacks=True,
+    ),
+    "claude": Harness(
+        name="claude",
+        guidance_filename="CLAUDE.md",
+        home_env="CLAUDE_HOME",
+        default_home=lambda: Path.home() / ".claude",
+    ),
+}
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Configure Pollinator Style routing in Codex guidance.",
+        description="Configure Pollinator Style routing in an agentic harness's guidance file.",
+    )
+    parser.add_argument(
+        "--harness",
+        choices=tuple(HARNESSES),
+        required=True,
+        help="Which agentic harness to configure (for example, codex or claude).",
     )
     parser.add_argument(
         "--scope",
         choices=("repo", "global"),
         default="repo",
-        help="Configure the current repository by default, or global Codex guidance.",
+        help="Configure the current repository by default, or the harness's global guidance.",
     )
     parser.add_argument(
         "--repo-root",
         help="Repository root to configure instead of discovering it from the current directory.",
     )
     parser.add_argument(
-        "--codex-home",
-        help="Codex home to use instead of CODEX_HOME or ~/.codex.",
+        "--home",
+        help="Harness home to use instead of the harness's home environment variable or default.",
     )
     parser.add_argument(
         "--allow-override",
         action="store_true",
-        help="Allow modification of an active AGENTS.override.md file.",
+        help="Allow modification of the harness's active override guidance file, when it has one.",
     )
     parser.add_argument(
         "--remove",
@@ -74,13 +128,13 @@ def discover_repo_root(start: Path) -> Path:
     return current
 
 
-def codex_home_path(explicit: str | None) -> Path:
+def home_path(harness: Harness, explicit: str | None) -> Path:
     if explicit:
         return Path(explicit).expanduser().resolve()
-    configured = os.environ.get("CODEX_HOME")
+    configured = os.environ.get(harness.home_env)
     if configured:
         return Path(configured).expanduser().resolve()
-    return (Path.home() / ".codex").resolve()
+    return harness.default_home().resolve()
 
 
 def parse_fallback_names(config_path: Path) -> tuple[list[str] | None, str | None]:
@@ -108,11 +162,11 @@ def parse_fallback_names(config_path: Path) -> tuple[list[str] | None, str | Non
     return [item.strip() for item in value], None
 
 
-def fallback_names(repo_root: Path, codex_home: Path) -> tuple[list[str], list[str]]:
+def fallback_names(repo_root: Path, home: Path) -> tuple[list[str], list[str]]:
     names: list[str] = []
     warnings: list[str] = []
     for config_path in (
-        codex_home / "config.toml",
+        home / "config.toml",
         repo_root / ".codex" / "config.toml",
     ):
         configured, warning = parse_fallback_names(config_path)
@@ -134,12 +188,13 @@ def is_nonempty_file(path: Path) -> bool:
 
 def guidance_candidates(
     directory: Path,
+    harness: Harness,
     fallbacks: list[str],
 ) -> list[tuple[Path, str]]:
-    candidates = [
-        (directory / "AGENTS.override.md", "override"),
-        (directory / "AGENTS.md", "agents"),
-    ]
+    candidates: list[tuple[Path, str]] = []
+    if harness.override_name is not None:
+        candidates.append((directory / harness.override_name, "override"))
+    candidates.append((directory / harness.guidance_filename, "primary"))
     candidates.extend((directory / name, "fallback") for name in fallbacks)
     return candidates
 
@@ -151,9 +206,9 @@ def select_active_target(
         if is_nonempty_file(path):
             return path, kind
     for path, kind in candidates:
-        if kind == "agents":
+        if kind == "primary":
             return path, kind
-    raise ValueError("guidance candidates did not include AGENTS.md")
+    raise ValueError("guidance candidates did not include the primary guidance file")
 
 
 def find_marked_targets(
@@ -246,19 +301,20 @@ def emit(payload: dict[str, Any], exit_code: int = 0) -> None:
 
 def main() -> None:
     args = parse_args()
+    harness = HARNESSES[args.harness]
     repo_root = (
         Path(args.repo_root).expanduser().resolve()
         if args.repo_root
         else discover_repo_root(Path.cwd())
     )
-    codex_home = codex_home_path(args.codex_home)
-    if args.scope == "global":
+    home = home_path(harness, args.home)
+    if args.scope == "global" or not harness.uses_fallbacks:
         names: list[str] = []
         warnings: list[str] = []
     else:
-        names, warnings = fallback_names(repo_root, codex_home)
-    target_directory = codex_home if args.scope == "global" else repo_root
-    candidates = guidance_candidates(target_directory, names)
+        names, warnings = fallback_names(repo_root, home)
+    target_directory = home if args.scope == "global" else repo_root
+    candidates = guidance_candidates(target_directory, harness, names)
     active_target, active_kind = select_active_target(candidates)
     marked_targets, marker_warnings = find_marked_targets(candidates)
     warnings.extend(marker_warnings)
@@ -268,6 +324,7 @@ def main() -> None:
             {
                 "action": "error",
                 "changed": False,
+                "harness": harness.name,
                 "repository_name": repo_root.name,
                 "repository_root": str(repo_root),
                 "scope": args.scope,
@@ -290,6 +347,7 @@ def main() -> None:
             {
                 "action": "error",
                 "changed": False,
+                "harness": harness.name,
                 "repository_name": repo_root.name,
                 "repository_root": str(repo_root),
                 "scope": args.scope,
@@ -305,12 +363,13 @@ def main() -> None:
 
     file_existed = target.exists()
 
-    if warnings and target_kind == "agents" and not is_nonempty_file(target):
+    if warnings and target_kind == "primary" and not is_nonempty_file(target):
         emit(
             {
                 "action": "error",
                 "changed": False,
                 "file_existed": file_existed,
+                "harness": harness.name,
                 "repository_name": repo_root.name,
                 "repository_root": str(repo_root),
                 "router_existed": False,
@@ -318,7 +377,7 @@ def main() -> None:
                 "target": str(target),
                 "target_kind": target_kind,
                 "warnings": warnings + [
-                    "refusing to create AGENTS.md because an unparsed fallback configuration could be shadowed"
+                    f"refusing to create {harness.guidance_filename} because an unparsed fallback configuration could be shadowed"
                 ],
                 "would_change": False,
             },
@@ -331,6 +390,7 @@ def main() -> None:
                 "action": "confirmation_required",
                 "changed": False,
                 "file_existed": file_existed,
+                "harness": harness.name,
                 "repository_name": repo_root.name,
                 "repository_root": str(repo_root),
                 "router_existed": False,
@@ -338,7 +398,7 @@ def main() -> None:
                 "target": str(target),
                 "target_kind": target_kind,
                 "warnings": warnings + [
-                    "the active AGENTS.override.md takes precedence; confirm before modifying it"
+                    f"the active {harness.override_name} takes precedence; confirm before modifying it"
                 ],
                 "would_change": False,
             },
@@ -352,6 +412,7 @@ def main() -> None:
             {
                 "action": "error",
                 "changed": False,
+                "harness": harness.name,
                 "scope": args.scope,
                 "target": str(target),
                 "warnings": warnings + [f"could not read target: {exc}"],
@@ -371,6 +432,7 @@ def main() -> None:
                 "action": "error",
                 "changed": False,
                 "file_existed": file_existed,
+                "harness": harness.name,
                 "repository_name": repo_root.name,
                 "repository_root": str(repo_root),
                 "router_existed": START_MARKER in original,
@@ -395,6 +457,7 @@ def main() -> None:
                     "action": "error",
                     "changed": False,
                     "file_existed": file_existed,
+                    "harness": harness.name,
                     "repository_name": repo_root.name,
                     "repository_root": str(repo_root),
                     "router_existed": router_existed,
@@ -414,6 +477,8 @@ def main() -> None:
             "changed": changed,
             "dry_run": args.dry_run,
             "file_existed": file_existed,
+            "guidance_filename": harness.guidance_filename,
+            "harness": harness.name,
             "repository_name": repo_root.name,
             "repository_root": str(repo_root),
             "router_existed": router_existed,
