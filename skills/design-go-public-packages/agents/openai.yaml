@@ -1,0 +1,4 @@
+interface:
+  display_name: "Go Public Package Style"
+  short_description: "Guide Go public package design and reviews"
+  default_prompt: "Use $design-go-public-packages to guide this public package change."

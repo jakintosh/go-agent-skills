@@ -1,0 +1,4 @@
+interface:
+  display_name: "Consent User Style"
+  short_description: "Guide Consent-backed user integration work"
+  default_prompt: "Use $work-with-consent-users to guide this user integration."

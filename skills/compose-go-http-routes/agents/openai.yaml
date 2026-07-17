@@ -1,0 +1,4 @@
+interface:
+  display_name: "Go HTTP Routing Style"
+  short_description: "Guide Go route trees and middleware boundaries"
+  default_prompt: "Use $compose-go-http-routes to guide this routing change."

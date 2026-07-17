@@ -1,0 +1,33 @@
+{
+  "name": "style",
+  "version": "0.1.0",
+  "description": "Opinionated Go engineering guidance from Studio Pollinator",
+  "author": {
+    "name": "Studio Pollinator"
+  },
+  "homepage": "https://git.sr.ht/~jakintosh/style",
+  "repository": "https://git.sr.ht/~jakintosh/style",
+  "keywords": [
+    "go",
+    "architecture",
+    "engineering-style",
+    "database"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Pollinator Style",
+    "shortDescription": "Opinionated guidance for Go application architecture.",
+    "longDescription": "A progressively disclosed knowledge system for designing, modifying, testing, and reviewing Go applications in the Studio Pollinator style.",
+    "developerName": "Studio Pollinator",
+    "category": "Developer Tools",
+    "capabilities": [
+      "Read",
+      "Write"
+    ],
+    "defaultPrompt": [
+      "Use $configure-pollinator-style to configure this repository.",
+      "Use Pollinator Style to guide this Go change.",
+      "Review this Go code against Pollinator Style."
+    ]
+  }
+}

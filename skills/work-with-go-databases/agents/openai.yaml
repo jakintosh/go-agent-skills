@@ -1,0 +1,4 @@
+interface:
+  display_name: "Go Database Style"
+  short_description: "Guide Go database changes and reviews"
+  default_prompt: "Use $work-with-go-databases to guide this database change."

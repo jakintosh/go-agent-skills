@@ -1,98 +1,65 @@
-# Style System
+# Pollinator Style
 
-This repository is the working home for an opinionated software style system.
+Pollinator Style is a Codex plugin containing Studio Pollinator's opinionated Go engineering guidance.
 
-The goal is to turn a set of broad style documents and reference projects into a clearer, more maintainable documentation system made up of:
+The plugin uses progressive disclosure so ordinary design, implementation, debugging, testing, and review tasks can draw on detailed guidance without loading the entire knowledge base. Skill metadata identifies relevant domains, each `SKILL.md` selects the applicable concerns, and focused references supply detailed rules and examples only when needed.
 
-- short foundation documents for cross-cutting principles
-- targeted subsystem guides for specific architectural jobs
-- reference material such as checklists and examples indexes
+## Repository structure
 
-The intended outcome is a set of documents that make it easy to answer questions like:
+```text
+.codex-plugin/
+  plugin.json
+skills/
+  configure-pollinator-style/
+    SKILL.md
+    agents/openai.yaml
+    scripts/
+  <domain-skill>/
+    SKILL.md
+    agents/openai.yaml
+    references/
+```
 
-- how should a CLI command tree be structured?
-- how should a router and subrouter tree be composed?
-- what should a config system look like?
-- how should database adapter code be written?
-- how should API tests be laid out?
+The root manifest discovers every skill under `skills/`. Domain knowledge lives in the narrowest reference that owns the concern, while `SKILL.md` files contain activation boundaries, universal invariants, reference routing, adjacent-domain routing, and validation behavior.
 
-## Why this exists
+## Skill catalog
 
-The original material in this repository captures a strong style, but much of it is currently organized as broad guides.
+| Skill | Domain |
+| --- | --- |
+| [`work-with-go-services`](skills/work-with-go-services/SKILL.md) | Domain behavior, service construction, errors, permissions, service-owned stores, bootstrap, and lifecycle hooks |
+| [`work-with-go-databases`](skills/work-with-go-databases/SKILL.md) | SQL adapters, migrations, queries, scans, transactions, durable constraints, and persistence tests |
+| [`work-with-go-http-apis`](skills/work-with-go-http-apis/SKILL.md) | JSON HTTP contracts, DTOs, handlers, error mapping, API tests, keys, and CORS |
+| [`compose-go-http-routes`](skills/compose-go-http-routes/SKILL.md) | Route-tree composition, package-handler mounting, and middleware boundaries |
+| [`work-with-go-servers`](skills/work-with-go-servers/SKILL.md) | Production dependency composition, mounting, listening, cleanup, and graceful shutdown |
+| [`work-with-go-clis`](skills/work-with-go-clis/SKILL.md) | Command trees, config wiring, named environments, version metadata, and API clients |
+| [`work-with-go-config`](skills/work-with-go-config/SKILL.md) | Authored config, runtime resolution, initialization, secrets, paths, and config-backed resources |
+| [`work-with-go-web-uis`](skills/work-with-go-web-uis/SKILL.md) | Server-rendered HTML, templates, view models, HTMX, forms, static assets, and web tests |
+| [`work-with-consent-users`](skills/work-with-consent-users/SKILL.md) | Consent integration, local accounts, account resolution, CSRF, local testing, and deployment |
+| [`design-go-public-packages`](skills/design-go-public-packages/SKILL.md) | Deliberate `pkg/` APIs, exported compatibility surfaces, package docs, and external reuse |
+| [`work-with-go-makefiles`](skills/work-with-go-makefiles/SKILL.md) | Go project Makefile targets, workflows, variables, cleanup, and help output |
 
-That is useful as source material, but not ideal for day-to-day use.
+[`configure-pollinator-style`](skills/configure-pollinator-style/SKILL.md) manages persistent ambient routing in Codex guidance.
 
-In practice, engineers usually need focused guidance for one subsystem at a time. This project exists to break the broader material into smaller, task-oriented guides that preserve the core style while making it easier to apply consistently.
+## Configure ambient routing
 
-## Current source material
+After installing and enabling the plugin, configure the current repository with:
 
-The repository began with broad guides such as:
+> Use `$configure-pollinator-style` to configure this repository.
 
-- `POLLINATOR_STYLE.md`
-- `API_TEST_STYLE.md`
-- `FRONT_END_STYLE.md`
+The setup skill discovers the active Codex instruction file, preserves its existing content, and manages one marked Pollinator Style block. The block tells Codex to inspect the code, select every materially affected skill from its description, load only relevant references, and reconsider selection as scope emerges.
 
-There are also temporary reference inputs, including:
+Repository scope is the default. For global behavior, ask explicitly:
 
-- `examples/`
-- `CONFIG-SYSTEM-DESIGN.md`
-- `COMMAND-GO-v040-MIGRATION.md`
+> Use `$configure-pollinator-style` to configure my global Codex guidance.
 
-These are source inputs for extraction and synthesis. They are not the desired final shape of the style system.
+To remove the managed block while preserving other instructions:
 
-In particular:
+> Use `$configure-pollinator-style` to remove Pollinator Style routing from this repository.
 
-- `examples/` is temporary and should not be treated as permanent documentation
-- real project examples should be rewritten into concise generic examples before the temporary source material is removed
-- migration framing should inform the rules, but should not become part of the final documentation voice
+The configurator reports the guidance file, whether it changed, the resulting action, and a short explanation of implicit routing. Start a new Codex task whenever the guidance file changes.
 
-## Target documentation structure
+## Contributing
 
-The documentation system is being organized into three main areas:
+Add knowledge to the narrowest reference that owns the concern. Change `SKILL.md` when activation, universal invariants, consultation behavior, adjacent-domain routing, or reference selection changes. Create a new skill only for a stable domain that should activate independently.
 
-### `foundations/`
-
-Short cross-cutting guides for shared principles, such as:
-
-- philosophy
-- repository layout
-- testing philosophy
-
-### `subsystems/`
-
-Focused guides for one architectural job at a time, such as:
-
-- router composition
-- config systems
-- database adapters
-- user accounts with Consent
-- API tests
-- server-rendered UI structure
-
-These are the main working documents of the system.
-
-### `reference/`
-
-Supporting material such as:
-
-- checklists
-- examples indexes
-- implementation notes
-
-For guidance on how to work on the style system — writing guides, understanding conventions, and what work remains — see [`CONTRIBUTING.md`](CONTRIBUTING.md).
-
-## Project goal
-
-The goal is not just to write nicer docs.
-
-The goal is to codify the style in a form that is:
-
-- easier to navigate
-- easier to extend
-- easier to apply consistently across projects
-- less dependent on memory or oral tradition
-- less dependent on reading real production repositories to infer intent
-
-## Current state
-
-The subsystem guides are largely complete. The remaining work is filling out the [`foundations/`](foundations/) and [`reference/`](reference/) areas — see [`CONTRIBUTING.md`](CONTRIBUTING.md) for details.
+See [`CONTRIBUTING.md`](CONTRIBUTING.md) for skill structure, writing conventions, and validation requirements.

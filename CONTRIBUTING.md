@@ -1,165 +1,102 @@
 # Contributing
 
-This document describes how to work on the style system itself — guide structure, writing conventions, and what work remains.
+This document defines how to maintain the Pollinator Style plugin and its domain skills.
 
-## Structure
+## Repository structure
 
-The style system has three areas:
-
-- [`foundations/`](foundations/) — short cross-cutting guides for shared principles (philosophy, repository layout, testing philosophy).
-- [`subsystems/`](subsystems/) — focused guides for one architectural job at a time (router composition, config, database adapters, etc.). These are the main working documents.
-- [`reference/`](reference/) — supporting material such as checklists and examples indexes.
-
-## Writing guides
-
-### Guide families
-
-Every subsystem is a directory family:
-
-```
-subsystems/
-  service/
-    README.md                   # spine doc
-    bootstrap-initialization.md # leaf doc
-    lifecycle-hooks.md          # leaf doc
-    with-config.md              # cross-subsystem leaf doc
+```text
+.codex-plugin/
+  plugin.json
+skills/
+  <domain-skill>/
+    SKILL.md
+    agents/openai.yaml
+    references/
 ```
 
-The directory name is the subsystem name. `README.md` is the spine doc — the default starting point and the highest-priority retrieval target. Sibling `.md` files are leaf docs that own one branch each.
+- [`.codex-plugin/plugin.json`](.codex-plugin/plugin.json) defines the installable plugin and discovers `skills/`.
+- [`skills/`](skills/) contains the setup skill, domain skills, and selectively loaded knowledge.
+- Each domain skill owns its detailed guidance. Do not duplicate the same rule or example across skills.
 
-### Spine docs
+[`configure-pollinator-style`](skills/configure-pollinator-style/SKILL.md) is an operational setup skill. It owns the managed `AGENTS.md` block and the completion message shown after configuration. Keep its router text, script behavior, README onboarding, and result vocabulary synchronized.
 
-A spine doc should define the subsystem's default shape, contain the highest-priority instructions, include the main canonical example, link to leaf docs at the decision point, and make adjacent subsystem touchpoints obvious.
+## Skill boundaries
 
-Most spine docs use roughly this structure:
+Create one skill for a stable domain of engineering judgment. A good boundary lets most meaningful work in that domain share the same small set of invariants while loading different references for different concerns.
 
-1. Title and purpose
-2. Use this when
-3. Owns
-4. Required instructions
-5. Canonical shape
-6. Canonical flow
-7. Canonical example
-8. Leaf docs
-9. Common touchpoints
+Name skills broadly enough to cover design, implementation, debugging, testing, and review. Prefer a name such as `work-with-go-databases` over one limited to a single operation.
 
-### Leaf docs
+Use adjacent-domain routing when a change materially affects more than one skill. Do not load a skill merely because changed code calls or implements an unchanged dependency.
 
-Leaf docs own branches of the subsystem. They should stay narrow and task-shaped, assume the spine doc already defined the subsystem, and include only the local rules and example material needed for that branch.
+## `SKILL.md`
 
-Most leaf docs use roughly this structure:
+Keep `SKILL.md` concise and operational. Include:
 
-1. Title and purpose
-2. Use this when
-3. Required instructions
-4. Local shape or flow
-5. Focused example
+1. Frontmatter containing only `name` and a concise, front-loaded `description`.
+2. Universal domain boundaries and invariants.
+3. A protocol for inspecting the target repository and selecting references.
+4. Direct links to every owned reference, with precise selection conditions.
+5. Adjacent-domain routing.
+6. Validation and review behavior.
+7. Maintenance guidance for future updates.
 
-### Naming
+Put activation conditions in the description because the body loads only after activation. Front-load the domain, then name recognizable files and concepts plus design, implementation, debugging, testing, and review. Keep descriptions as the single source of truth for domain matching; the ambient router should coordinate selection without duplicating the catalog.
 
-- Descriptive names for internal branches: `bootstrap-initialization.md`, `lifecycle-hooks.md`
-- `with-<other-subsystem>.md` for cross-subsystem docs: `with-config.md`, `with-service.md`, `with-routing.md`
+Keep detailed rules, examples, schemas, and optional branches in references rather than condensing them into `SKILL.md`.
 
-### Authoring principles
+## References
 
-Optimize for:
+Keep references one level below `SKILL.md` and link every reference directly from it:
 
-- one strong default path
-- progressive disclosure
-- low instruction count
-- low branching pressure
-- examples that are easy to imitate
+```text
+skills/work-with-go-databases/
+  SKILL.md
+  references/
+    adapter-shape.md
+    migrations.md
+    migrations-with-go.md
+    query-methods.md
+    testing.md
+    transactions.md
+```
 
-Do not optimize for:
+Each reference should own one concern and remain useful as declarative library information. It may define ownership boundaries, required rules, canonical shapes, decisions, and examples.
 
-- exhaustive coverage
-- symmetrical section checklists
-- large anti-pattern inventories
-- long boundary disclaimers
+For references longer than 100 lines, include a contents list near the top. Avoid reference chains that require reading one file to discover another; `SKILL.md` owns the complete routing map.
 
-Core rules:
+Detailed integration guidance belongs with the consuming domain. Provider skills should mention the touchpoint briefly in adjacent-domain routing without duplicating the integration rules.
 
-- **Write for execution, not completeness theater.** Define one default path before documenting variants. Prefer one canonical shape over several equivalent patterns.
-- **Use positive instructions by default.** Do not include an "Anti-patterns" section by default. Include negative guidance only when it prevents a mistake that is easy to make, costly to recover from, and not already prevented by the default path.
-- **Use examples to compress explanation.** Every spine doc should include at least one strong example that shows the default shape clearly, is realistic enough to imitate, and is short enough to scan quickly. Use neutral names (`documents`, `projects`, `settings`, `themes`) unless a concrete dependency is itself part of the rule.
-- **Split optional material when it weakens the main guide.** If a guide shows several roughly equal ways to do the same thing, it needs revision.
-- **Instruction count matters.** State the most important rules plainly. Remove low-value repetition. Cut obvious inverses of the preferred pattern. Move optional material into leaf docs. Let examples carry part of the teaching load.
+## Agent metadata
 
-### Cross-subsystem docs
+Every skill should include `agents/openai.yaml` with:
 
-When two subsystems touch, the detailed integration doc lives with the consuming subsystem:
+- a human-readable display name
+- a 25–64 character short description
+- a short default prompt that explicitly names the skill with `$skill-name`
 
-- If subsystem A consumes subsystem B, put the integration doc in A.
-- The provider should mention the touchpoint briefly in its `README.md`, not duplicate the full integration guidance.
-- Use a separate subsystem family only when the crossover is a stable shared contract reused across multiple subsystems.
+Enable implicit invocation by default. Add scripts, assets, or tool dependencies only when the skill uses them.
 
-Link to the relevant leaf doc where the reader would naturally need it, rather than relying on bottom-of-page related-guide lists.
+## Writing principles
 
-### Review checklist
+- Define one strong default before documenting variants.
+- Prefer positive, executable instructions.
+- Use concise examples to demonstrate canonical structure.
+- Keep instruction counts low and branching deliberate.
+- Preserve coherent repository conventions outside the requested scope.
+- Explain material deviations from the guidance.
+- Update the narrowest reference when a rule or example changes.
+- Update `SKILL.md` only when domain-wide behavior or routing changes.
 
-A guide is working when:
+## Validation
 
-- the default path is obvious
-- `README.md` is a clear starting point
-- optional branches are isolated cleanly
-- subsystem touchpoints are easy to discover
-- examples are easy to imitate structurally
-- a reader could implement a first pass from the spine doc alone
+Run the skill creator's `quick_validate.py` against every changed skill and the plugin creator's `validate_plugin.py` against the repository root.
 
-## Remaining work
+Also verify that:
 
-### Foundations
-
-The `foundations/` directory is still a placeholder. Three documents still need to be written, drawing from the rules below:
-
-**`foundations/philosophy.md`** — core principles that apply everywhere.
-
-Required rules:
-- Prefer the standard library unless an external dependency removes meaningful code or risk.
-- Keep architecture shallow and direct.
-- Separate composition from behavior.
-- Make dependencies explicit via options and constructors, not package globals.
-- Favor clarity over cleverness and keep data flow obvious.
-- Keep error strings lowercase and unpunctuated.
-- JSON tags should use `snake_case`.
-- Avoid package-level mutable state for stores and services.
-- Avoid deep or overly generic abstractions when direct code is clearer.
-
-Default rules:
-- Optimize for author ergonomics and readability over abstraction depth.
-- Prefer explicit names over abbreviations.
-- Use one operation per statement and avoid dense chaining.
-
-**`foundations/repository-layout.md`** — how to place files and packages.
-
-Required rules:
-- Prefer domain-oriented naming so engineers can find behavior quickly.
-
-Default rules:
-- Keep related behavior local until size or clarity justifies a split.
-- Use `internal/` as the default home for application code.
-
-**`foundations/testing-philosophy.md`** — shared testing principles.
-
-Required rules:
-- Use short, deterministic default test setups and avoid external dependencies in default suites.
-- Keep the default test suite fast and hermetic; isolate true integrations behind explicit boundaries.
-
-### Reference checklists
-
-The `reference/checklists/` directory is also a placeholder. Candidate checklists to write:
-
-- adding a new CLI command
-- mounting a new router subtree
-- writing API tests for a new endpoint
-
-An examples index (mapping projects to the patterns they demonstrate) could live in `reference/` as well.
-
-## Future meta instructions
-
-This document is the right place for any additional conventions about working on the style system — for example:
-
-- how to propose a new subsystem guide
-- when to deprecate or remove a guide
-- review process for guide changes
-- tooling or automation expectations
+- every `SKILL.md` links directly to every owned reference
+- every local Markdown link resolves
+- every reference longer than 100 lines has a contents list near the top
+- frontmatter contains only `name` and `description`
+- every default prompt names its skill
+- no scaffold placeholders or trailing whitespace remain
+- representative prompts activate the intended skills without loading unrelated domains

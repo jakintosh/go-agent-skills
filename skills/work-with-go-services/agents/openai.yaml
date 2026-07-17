@@ -1,0 +1,4 @@
+interface:
+  display_name: "Go Service Style"
+  short_description: "Guide Go service and store boundary work"
+  default_prompt: "Use $work-with-go-services to guide this service change."

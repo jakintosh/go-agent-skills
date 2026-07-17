@@ -1,0 +1,4 @@
+interface:
+  display_name: "Go Web UI Style"
+  short_description: "Guide server-rendered Go web interface work"
+  default_prompt: "Use $work-with-go-web-uis to guide this web UI change."

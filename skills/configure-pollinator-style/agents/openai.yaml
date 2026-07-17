@@ -1,0 +1,4 @@
+interface:
+  display_name: "Configure Pollinator Style"
+  short_description: "Enable ambient Pollinator Style routing"
+  default_prompt: "Use $configure-pollinator-style to configure this repository."

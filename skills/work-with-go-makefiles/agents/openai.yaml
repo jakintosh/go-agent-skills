@@ -1,0 +1,4 @@
+interface:
+  display_name: "Go Makefile Style"
+  short_description: "Guide Makefile changes for Go projects"
+  default_prompt: "Use $work-with-go-makefiles to guide this Makefile change."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Go Config Style"
+  short_description: "Guide Go configuration systems and resources"
+  default_prompt: "Use $work-with-go-config to guide this config change."

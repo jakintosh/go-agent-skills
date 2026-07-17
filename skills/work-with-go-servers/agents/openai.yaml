@@ -1,0 +1,4 @@
+interface:
+  display_name: "Go Server Style"
+  short_description: "Guide Go server composition and lifecycle"
+  default_prompt: "Use $work-with-go-servers to guide this server change."

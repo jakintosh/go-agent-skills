@@ -1,0 +1,4 @@
+interface:
+  display_name: "Go HTTP API Style"
+  short_description: "Guide Go JSON HTTP API changes and reviews"
+  default_prompt: "Use $work-with-go-http-apis to guide this API change."

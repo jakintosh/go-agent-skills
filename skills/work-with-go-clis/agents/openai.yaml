@@ -1,0 +1,4 @@
+interface:
+  display_name: "Go CLI Style"
+  short_description: "Guide Go CLI command trees and API clients"
+  default_prompt: "Use $work-with-go-clis to guide this CLI change."
