@@ -47,8 +47,8 @@ class Harness:
         self,
         name: str,
         guidance_filename: str,
-        home_env: str,
         default_home: Callable[[], Path],
+        home_env: str | None = None,
         override_name: str | None = None,
         uses_fallbacks: bool = False,
     ) -> None:
@@ -58,6 +58,13 @@ class Harness:
         self.default_home = default_home
         self.override_name = override_name
         self.uses_fallbacks = uses_fallbacks
+
+
+def opencode_default_home() -> Path:
+    """Resolve OpenCode's config home, honoring XDG_CONFIG_HOME."""
+    xdg = os.environ.get("XDG_CONFIG_HOME")
+    base = Path(xdg) if xdg else Path.home() / ".config"
+    return base / "opencode"
 
 
 HARNESSES: dict[str, Harness] = {
@@ -74,6 +81,11 @@ HARNESSES: dict[str, Harness] = {
         guidance_filename="CLAUDE.md",
         home_env="CLAUDE_HOME",
         default_home=lambda: Path.home() / ".claude",
+    ),
+    "opencode": Harness(
+        name="opencode",
+        guidance_filename="AGENTS.md",
+        default_home=opencode_default_home,
     ),
 }
 
@@ -131,7 +143,7 @@ def discover_repo_root(start: Path) -> Path:
 def home_path(harness: Harness, explicit: str | None) -> Path:
     if explicit:
         return Path(explicit).expanduser().resolve()
-    configured = os.environ.get(harness.home_env)
+    configured = os.environ.get(harness.home_env) if harness.home_env else None
     if configured:
         return Path(configured).expanduser().resolve()
     return harness.default_home().resolve()

@@ -13,6 +13,7 @@ The script configures exactly one agentic harness per run, named with the requir
 
 - `--harness claude` for Claude Code (guidance file `CLAUDE.md`).
 - `--harness codex` for Codex (guidance file `AGENTS.md`).
+- `--harness opencode` for OpenCode (guidance file `AGENTS.md`).
 
 If the user names a harness, use it. Otherwise default to the harness you are running in. Only configure more than one harness when the user explicitly asks, running the script once per harness.
 

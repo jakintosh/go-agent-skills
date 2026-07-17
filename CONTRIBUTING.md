@@ -7,9 +7,9 @@ This document defines how to maintain the Pollinator Style plugin and its domain
 ```text
 .claude-plugin/
   plugin.json
-  marketplace.json
 .codex-plugin/
   plugin.json
+install_opencode.sh
 skills/
   <domain-skill>/
     SKILL.md
@@ -17,7 +17,7 @@ skills/
     references/
 ```
 
-- Each harness has its own manifest that discovers `skills/`: [`.claude-plugin/plugin.json`](.claude-plugin/plugin.json) for Claude Code and [`.codex-plugin/plugin.json`](.codex-plugin/plugin.json) for Codex.
+- Each harness exposes `skills/` through its own install mechanism: the [`.claude-plugin/plugin.json`](.claude-plugin/plugin.json) manifest for Claude Code, the [`.codex-plugin/plugin.json`](.codex-plugin/plugin.json) manifest for Codex, and the [`install_opencode.sh`](install_opencode.sh) directory-copy script for OpenCode.
 - [`skills/`](skills/) contains the setup skill, domain skills, and selectively loaded knowledge, shared across every harness.
 - Each domain skill owns its detailed guidance. Do not duplicate the same rule or example across skills.
 
@@ -27,9 +27,9 @@ skills/
 
 The skills are harness-agnostic; only a thin surface differs per harness. When adding or maintaining harness support, keep these pieces in sync:
 
-- **Manifest.** Each harness discovers `skills/` through its own manifest directory (`.claude-plugin/`, `.codex-plugin/`). Add one manifest per harness; do not move or rename `skills/`.
-- **Guidance file.** The configurator writes the marked routing block into the harness's guidance file — `CLAUDE.md` for Claude Code, `AGENTS.md` for Codex. Harness-specific precedence rules (Codex's `AGENTS.override.md` and `project_doc_fallback_filenames`) are handled only in that harness's branch.
-- **Configurator branch.** [`scripts/configure_routing.py`](skills/configure-pollinator-style/scripts/configure_routing.py) selects a harness with the required `--harness` flag. Add a new harness by registering it in the `HARNESSES` table with its guidance filename, home environment variable, and default home; the shared marker-block logic then applies unchanged.
+- **Install mechanism.** A harness either discovers `skills/` through a manifest directory (`.claude-plugin/`, `.codex-plugin/`) or has skills installed into a directory it scans. OpenCode has no plugin manifest, so [`install_opencode.sh`](install_opencode.sh) copies each skill into `${XDG_CONFIG_HOME:-~/.config}/opencode/skills/`; re-running overwrites those skills and `--uninstall` removes them. Whichever mechanism a harness uses, do not move or rename `skills/`.
+- **Guidance file.** The configurator writes the marked routing block into the harness's guidance file — `CLAUDE.md` for Claude Code, `AGENTS.md` for Codex and OpenCode. Codex and OpenCode therefore share the same repository-root `AGENTS.md` block at project scope, which is intended and idempotent; they differ only in their global home (`~/.codex` versus `${XDG_CONFIG_HOME:-~/.config}/opencode`). Harness-specific precedence rules (Codex's `AGENTS.override.md` and `project_doc_fallback_filenames`) are handled only in that harness's branch.
+- **Configurator branch.** [`scripts/configure_routing.py`](skills/configure-pollinator-style/scripts/configure_routing.py) selects a harness with the required `--harness` flag. Add a new harness by registering it in the `HARNESSES` table with its guidance filename and a `default_home` callable; supply a `home_env` only when the harness reads one, and set `override_name`/`uses_fallbacks` only for harness-specific precedence. The shared marker-block logic then applies unchanged.
 - **Per-skill interface metadata.** `agents/openai.yaml` is Codex-only interface metadata. Harnesses that do not use it (such as Claude Code) ignore it. It is the one place where the Codex `$skill-name` invocation syntax is intentionally retained.
 
 Keep everything else — `SKILL.md` bodies, references, and the README — written for agentic harnesses in general, naming a specific harness only in a dedicated harness section or a small callout where a detail genuinely differs.
@@ -108,6 +108,7 @@ Run the skill creator's `quick_validate.py` against every changed skill and the 
 Also verify that:
 
 - every harness manifest (`.claude-plugin/plugin.json`, `.codex-plugin/plugin.json`) is valid JSON and still discovers `skills/`
+- `install_opencode.sh` copies every skill into a scoped skill directory, overwrites cleanly on re-run, leaves unrelated skills in place, and removes only its own skills with `--uninstall` (test against a throwaway `XDG_CONFIG_HOME`)
 - the configurator produces the expected result for each supported harness at repository and global scope (use `--dry-run`)
 - every `SKILL.md` links directly to every owned reference
 - every local Markdown link resolves

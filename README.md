@@ -6,23 +6,36 @@ The plugin uses progressive disclosure so ordinary design, implementation, debug
 
 ## Supported harnesses
 
-The knowledge base is a set of harness-agnostic skills. Each supported harness discovers them through its own manifest and, when configured, routes to them through its own guidance file.
+The knowledge base is a set of harness-agnostic skills. Each supported harness discovers them through its own install mechanism and, when configured, routes to them through its own guidance file.
 
-| Harness | Manifest | Guidance file |
+| Harness | Skills installed via | Guidance file |
 | --- | --- | --- |
-| Claude Code | `.claude-plugin/plugin.json` | `CLAUDE.md` |
-| Codex | `.codex-plugin/plugin.json` | `AGENTS.md` |
+| Claude Code | `.claude-plugin/plugin.json` manifest | `CLAUDE.md` |
+| Codex | `.codex-plugin/plugin.json` manifest | `AGENTS.md` |
+| OpenCode | [`install_opencode.sh`](install_opencode.sh) | `AGENTS.md` |
 
-Support for additional harnesses is added by contributing another manifest and a configurator branch; see [`CONTRIBUTING.md`](CONTRIBUTING.md). Everything under `skills/` is shared across harnesses unchanged.
+Support for additional harnesses is added by contributing another install mechanism and a configurator branch; see [`CONTRIBUTING.md`](CONTRIBUTING.md). Everything under `skills/` is shared across harnesses unchanged.
+
+### Install for OpenCode
+
+OpenCode has no plugin manifest, so it discovers skills by directory. Clone this repository and run the install script to copy the skills into OpenCode's user skill directory:
+
+```sh
+git clone https://git.studiopollinator.com/pollinator/style.git
+cd style
+./install_opencode.sh
+```
+
+Start a new OpenCode session and the skills are available in every project. Re-run `./install_opencode.sh` after `git pull` to update, or `./install_opencode.sh --uninstall` to remove them. Then enable ambient routing as described below.
 
 ## Repository structure
 
 ```text
 .claude-plugin/
   plugin.json
-  marketplace.json
 .codex-plugin/
   plugin.json
+install_opencode.sh
 skills/
   configure-pollinator-style/
     SKILL.md
@@ -34,7 +47,7 @@ skills/
     references/
 ```
 
-Each harness's manifest discovers every skill under `skills/`. Domain knowledge lives in the narrowest reference that owns the concern, while `SKILL.md` files contain activation boundaries, universal invariants, reference routing, adjacent-domain routing, and validation behavior. Per-skill `agents/openai.yaml` files carry Codex interface metadata and are ignored by harnesses that do not use them.
+Every harness draws on the same skills under `skills/`: Claude Code and Codex discover them through their manifests, and OpenCode installs copies with `install_opencode.sh`. Domain knowledge lives in the narrowest reference that owns the concern, while `SKILL.md` files contain activation boundaries, universal invariants, reference routing, adjacent-domain routing, and validation behavior. Per-skill `agents/openai.yaml` files carry Codex interface metadata and are ignored by harnesses that do not use them.
 
 ## Skill catalog
 
