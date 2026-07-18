@@ -125,10 +125,10 @@ For example, `documents.go` may own:
 
 Keep service mutations readable by making their phases visible:
 
-1. validate the requested domain intent
-2. load current state when the rules depend on it
-3. apply domain rules and build the store input
-4. call the store and map persistence failures to service errors
+1. validate the requested domain intent and inputs that do not depend on current persisted state
+2. coordinate reads or external work that need not be atomic with the mutation
+3. call a domain-named store operation that atomically enforces persisted-state preconditions and returns its domain result
+4. map store outcomes to service errors and continue orchestration
 
 ```go
 package service

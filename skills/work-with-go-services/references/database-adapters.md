@@ -16,7 +16,7 @@ Use it when you are writing adapter methods for a store interface, adding a comp
 
 - Implement store interfaces from `internal/service` without changing their method names or signatures.
 - Add a compile-time conformance check in the database package.
-- Keep database methods mechanical: query or exec, scan, convert, return.
+- Keep database methods mechanical implementations of the store contract: query or execute, atomically enforce documented persisted-state preconditions, coordinate transactions, scan, convert, and return contract outcomes.
 - Scan into local primitives or `sql.Null*` values, then build service domain values explicitly.
 - Wrap adapter errors with operation-specific context.
 - Keep SQL driver types inside `internal/database`.

@@ -53,7 +53,7 @@ For local SQLite services, the default setup is:
 
 If you are changing schema behavior, read [migrations.md](./migrations.md). That guide keeps SQL-string migrations as the default path and links to a deeper guide when a migration needs procedural steps. Test open and migration behavior with [testing.md](./testing.md).
 
-Schema constraints, foreign keys, conditional statements, and transactionally coordinated writes should make invalid persistence operations fail through the adapter. Service methods can decide policy before calling the store, but the database should still protect durable state when a caller reaches the adapter directly.
+Schema constraints, foreign keys, conditional statements, and transactionally coordinated writes should make invalid persistence operations fail through the adapter. The service defines policy through its store contract and may validate inputs independent of persisted state before the call; the adapter atomically enforces contract preconditions that depend on current durable state so direct adapter callers cannot bypass them.
 
 ## Canonical Flow
 

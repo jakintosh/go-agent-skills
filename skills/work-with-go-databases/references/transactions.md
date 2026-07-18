@@ -18,7 +18,7 @@ Use it when one operation spans multiple writes, several statements need one con
 - Make `Commit()` the explicit success path.
 - Keep transaction-scoped helper methods mechanical.
 - Pass `*sql.Tx` into local helpers instead of hiding transaction state globally.
-- Keep service-level validation and business policy out of the transaction body.
+- Keep policy definition and validation independent of persisted state in the service; atomically enforce store-contract preconditions that depend on current durable state in the transaction body.
 - Translate storage invariant failures into meaningful adapter errors.
 
 ## Canonical Flow
@@ -82,6 +82,8 @@ func (db *DB) sqlMarkDocumentPublishedTx(
 ```
 
 This keeps the public method readable while keeping transaction state explicit. Prefer constraints, foreign keys, conditional writes, or a single statement when they can enforce the invariant clearly; use a transaction when several storage steps must succeed or fail together.
+
+For stateful domain operations, keep transaction orchestration, ordered precondition checks, contract-outcome selection, and the single commit path visible in the public adapter method. Extract mechanical SQL and scanning into narrowly named helpers that accept `*sql.Tx`; do not hide the state transition behind vague policy-named helpers.
 
 ## Consistent Multi-Query Reads
 

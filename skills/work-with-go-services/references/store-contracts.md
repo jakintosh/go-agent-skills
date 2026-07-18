@@ -13,6 +13,7 @@ The store contract is the service-owned persistence boundary. It uses domain voc
 - [Canonical Flow](#canonical-flow)
 - [Canonical Example](#canonical-example)
 - [More Examples](#more-examples)
+- [Persisted-State Preconditions](#persisted-state-preconditions)
 - [Leaf Docs](#leaf-docs)
 - [Common Touchpoints](#common-touchpoints)
 - [Testing Expectations](#testing-expectations)
@@ -52,10 +53,10 @@ Keep the ownership split clear:
 The default flow is:
 
 1. an API handler decodes DTO inputs and calls a service method
-2. the service validates domain inputs
-3. the service applies any domain functionality
-4. the service calls the store contract with domain-shaped values
-5. the database adapter implements that contract mechanically
+2. the service validates domain inputs that do not depend on current persisted state
+3. the service selects and coordinates the intended domain operation
+4. the service calls a domain-named store capability with every required domain input
+5. the database adapter atomically enforces persisted-state preconditions, performs the operation, and returns its documented domain outcome
 
 If you are implementing the adapter side of this boundary in `internal/database`, read [database-adapters.md](database-adapters.md).
 
@@ -146,6 +147,12 @@ Keep the same rules in both cases:
 - persistence-shaped parameters are named honestly
 - domain result types stay service-owned
 - sensitive values move through explicit capabilities instead of ordinary returned struct fields
+
+## Persisted-State Preconditions
+
+When a mutation is valid only for certain persisted states, make the store method a complete domain persistence capability. The service owns and documents the rule in its store contract, validates inputs that do not depend on current storage, and passes domain inputs such as an injected `now`; the adapter checks the current stored state and performs the mutation atomically through a conditional statement or transaction. Do not use a preliminary service read as the enforcement for a precondition that must still hold when the write commits.
+
+Document every semantic outcome and express it in the signature where possible: return the service-owned domain value produced by the operation, and use distinct service-owned errors for outcomes such as not found, conflict, or expiration. Define exact idempotency behavior when the operation supports retries. This prevents the service from reconstructing transaction outcomes with follow-up reads.
 
 ## Leaf Docs
 

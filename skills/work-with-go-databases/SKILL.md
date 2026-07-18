@@ -10,7 +10,7 @@ Use this skill as a database-domain knowledge layer, not only for greenfield imp
 ## Preserve the boundary
 
 - Keep `internal/database` mechanical and storage-focused.
-- Implement persistence contracts owned by `internal/service`; do not move domain policy into the adapter.
+- Implement persistence contracts owned by `internal/service`; atomically enforce their persisted-state preconditions without independently inventing domain policy in the adapter.
 - Keep SQL, driver types, scans, and storage conversions inside the database package.
 - Provide one explicit `Open(...)` entry point that returns a migrated, ready-to-use adapter.
 - Enforce durable invariants with schema constraints and storage behavior.
