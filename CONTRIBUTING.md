@@ -10,6 +10,7 @@ This document defines how to maintain the Pollinator Go plugin and its domain sk
 .codex-plugin/
   plugin.json
 install_opencode.sh
+PRINCIPLES.md
 skills/
   <domain-skill>/
     SKILL.md
@@ -22,6 +23,14 @@ skills/
 - Each domain skill owns its detailed guidance. Do not duplicate the same rule or example across skills.
 
 [`configure-pollinator-style`](skills/configure-pollinator-style/SKILL.md) is an operational setup skill. It owns the managed routing block written into each harness's guidance file and the completion message shown after configuration. Keep its router text, script behavior, README onboarding, and result vocabulary synchronized.
+
+[`report-pollinator-learning`](skills/report-pollinator-learning/SKILL.md) and [`ingest-pollinator-learning`](skills/ingest-pollinator-learning/SKILL.md) carry preferences discovered in other repositories into this knowledge base. Reports are transient conversation artifacts: do not save them in the repository. Ingestion must inspect existing guidance and [`PRINCIPLES.md`](PRINCIPLES.md), surface contradictions, propose exact minimal edits, and receive explicit approval before changing files.
+
+## Principles
+
+[`PRINCIPLES.md`](PRINCIPLES.md) contains concise design values that recur across multiple engineering domains. Use it to interpret local rules and reconcile tensions without replacing the actionable guidance owned by domain references.
+
+Add or change a principle only when the rationale recurs across the knowledge base or materially resolves conflicting guidance. Do not add principles to preserve the history of an individual proposal. Keep the useful local rationale in the resulting rule and preserve additional historical context in git history.
 
 ## Harness support
 
@@ -117,3 +126,4 @@ Also verify that:
 - every Codex default prompt names its skill
 - no scaffold placeholders or trailing whitespace remain
 - representative prompts activate the intended skills without loading unrelated domains
+- ingested learnings do not leave proposal artifacts in the repository

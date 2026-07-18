@@ -36,6 +36,7 @@ Start a new OpenCode session and the skills are available in every project. Re-r
 .codex-plugin/
   plugin.json
 install_opencode.sh
+PRINCIPLES.md
 skills/
   configure-pollinator-style/
     SKILL.md
@@ -47,7 +48,7 @@ skills/
     references/
 ```
 
-Every harness draws on the same skills under `skills/`: Claude Code and Codex discover them through their manifests, and OpenCode installs copies with `install_opencode.sh`. Domain knowledge lives in the narrowest reference that owns the concern, while `SKILL.md` files contain activation boundaries, universal invariants, reference routing, adjacent-domain routing, and validation behavior. Per-skill `agents/openai.yaml` files carry Codex interface metadata and are ignored by harnesses that do not use them.
+Every harness draws on the same skills under `skills/`: Claude Code and Codex discover them through their manifests, and OpenCode installs copies with `install_opencode.sh`. Domain knowledge lives in the narrowest reference that owns the concern, while `SKILL.md` files contain activation boundaries, universal invariants, reference routing, adjacent-domain routing, and validation behavior. [`PRINCIPLES.md`](PRINCIPLES.md) captures cross-cutting values used to interpret and evolve that guidance. Per-skill `agents/openai.yaml` files carry Codex interface metadata and are ignored by harnesses that do not use them.
 
 ## Skill catalog
 
@@ -64,8 +65,11 @@ Every harness draws on the same skills under `skills/`: Claude Code and Codex di
 | [`work-with-consent-users`](skills/work-with-consent-users/SKILL.md) | Consent integration, local accounts, account resolution, CSRF, local testing, and deployment |
 | [`design-go-public-packages`](skills/design-go-public-packages/SKILL.md) | Deliberate `pkg/` APIs, exported compatibility surfaces, package docs, and external reuse |
 | [`work-with-go-makefiles`](skills/work-with-go-makefiles/SKILL.md) | Go project Makefile targets, workflows, variables, cleanup, and help output |
+| [`write-git-commit-messages`](skills/write-git-commit-messages/SKILL.md) | Git commit subjects and proportional bodies in Studio Pollinator's house style |
 
 [`configure-pollinator-style`](skills/configure-pollinator-style/SKILL.md) manages persistent ambient routing in a harness's guidance file.
+
+[`report-pollinator-learning`](skills/report-pollinator-learning/SKILL.md) turns a preference discovered during project work into a concise message that can be pasted into a Pollinator Go maintenance conversation. [`ingest-pollinator-learning`](skills/ingest-pollinator-learning/SKILL.md) evaluates that report against the current guidance and principles, resolves conflicts with the maintainer, and applies only an explicitly approved update.
 
 ## Configure ambient routing
 
@@ -88,5 +92,7 @@ The configurator reports the harness, the guidance file, whether it changed, the
 ## Contributing
 
 Add knowledge to the narrowest reference that owns the concern. Change `SKILL.md` when activation, universal invariants, consultation behavior, adjacent-domain routing, or reference selection changes. Create a new skill only for a stable domain that should activate independently.
+
+Use [`PRINCIPLES.md`](PRINCIPLES.md) for concise values that recur across multiple domains, not for individual rules or a history of proposals.
 
 See [`CONTRIBUTING.md`](CONTRIBUTING.md) for skill structure, writing conventions, and validation requirements.

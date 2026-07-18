@@ -1,0 +1,4 @@
+interface:
+  display_name: "Ingest Pollinator Learning"
+  short_description: "Review and apply an upstream Go learning"
+  default_prompt: "Use $ingest-pollinator-learning to evaluate this report and propose a Pollinator Go update."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Write Git Commit Messages"
+  short_description: "Write commits in the Pollinator house style"
+  default_prompt: "Use $write-git-commit-messages to write a commit message for these changes."

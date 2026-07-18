@@ -1,0 +1,4 @@
+interface:
+  display_name: "Report Pollinator Learning"
+  short_description: "Capture a Go learning for upstream review"
+  default_prompt: "Use $report-pollinator-learning to turn this discussion into a concise handoff for Pollinator Go."
