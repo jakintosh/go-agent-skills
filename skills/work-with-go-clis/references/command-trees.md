@@ -107,6 +107,7 @@ func main() {
   - `OptionTypeFlag`: options that are boolean (true/false)
 - Use branch commands to group workflows and leaf commands to execute behavior
 - Put shared options at the highest command where they make semantic sense
+- Define operands and options inline; avoid extracting argument slices into intermediate variables
 - Keep command handlers inline on the command definition unless the handler is large enough to obscure the tree
 - Handlers should not contain any business logic, and should only convert CLI context into config, server, client, or core domain service calls
 - Use `input.GetOperand(<name>)` to parse mandatory operand values
