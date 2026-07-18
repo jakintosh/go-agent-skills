@@ -17,7 +17,9 @@ Inspect relevant project files only when needed to represent the situation accur
 
 Give the learning a descriptive title. Explain what happened, state the user's preferred behavior, and preserve the reasoning that led to it.
 
-Include a small code excerpt or before-and-after example only when it makes the distinction substantially clearer. Include other context only when it was important to the conclusion. Choose whatever organization communicates the particular learning most naturally.
+Include the smallest relevant code excerpt whenever the learning concerns code shape, placement, naming, abstraction, or another implementation-level distinction. Prefer actual before-and-after code when both are available. If only the unwanted implementation exists, include that excerpt and describe the preferred change without inventing project code.
+
+Code may be omitted when the learning is conceptual and prose communicates it completely. Include other context only when it was important to the conclusion. Choose whatever organization communicates the particular learning most naturally.
 
 Keep the report as short as possible without making the receiving agent reconstruct the original conversation.
 

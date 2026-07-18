@@ -1,6 +1,6 @@
 {
   "name": "pollinator-go",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Opinionated Go engineering guidance from Studio Pollinator",
   "author": {
     "name": "Studio Pollinator"

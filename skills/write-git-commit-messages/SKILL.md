@@ -29,13 +29,29 @@ Begin the description with lowercase, use a past-tense phrase, and omit the trai
 
 Keep the subject focused on one coherent outcome. When the change has several details, summarize their shared purpose in the subject and explain the important parts in the body.
 
-## Size the body to the change
+## Preserve the useful story
 
-For a substantive change, leave one blank line after the subject and write one or two compact paragraphs, normally 40–100 words. For a small change, use a sentence or two. Omit the body when the change is truly trivial and the subject already communicates everything a future reader would need to know.
+Scale the body to the context worth preserving, not the number of changed files or lines. Ask what important information would be difficult to recover from the diff later.
 
-Explain why the change was needed, then identify the most important shape of the solution: a design choice, ownership boundary, behavioral consequence, or tradeoff that the diff cannot explain by itself. Mention tests, compatibility, migration concerns, or known limitations when they materially help a future reader. Never claim verification that did not occur.
+Omit the body when the subject and diff tell the complete story. Use one or two sentences when only one small piece of context is missing. Use multiple paragraphs when the change has meaningful background, decisions, tradeoffs, or consequences that need to remain understandable.
 
-Do not repeat the subject, narrate routine edits, or inventory every changed file. Prefer prose. Use bullets only when three or more independently important parts would be harder to understand as a paragraph.
+A small diff may justify a substantial body. A large mechanical diff may justify none. Write the shortest body that preserves the important story.
+
+The body may explain what changed, why it changed, what prompted it, a decision or rejected alternative, a tradeoff, a compatibility constraint, or a meaningful consequence. Include only the parts that help a future reader. Do not force every body to begin with rationale when a direct account of the completed work is more useful.
+
+## Write the body plainly
+
+Write the body as a brief retrospective account. Use past tense and first-person plural for completed work, such as “we added,” “we changed,” or “we chose.” Describe earlier conditions in the past tense. Use present tense only for a state or consequence that remains true after the commit.
+
+Avoid imperatives such as “add,” “require,” or “validate”; they read like instructions rather than history. Name the affected component when that helps orient the reader. Give distinct changes or ideas separate sentences instead of forcing them into one contrast or abstraction.
+
+Use short sentences with one main idea each. Prefer common words, concrete nouns, and active verbs. For a longer explanation, add sentences and paragraphs instead of making the grammar more complicated. Let each paragraph handle one part of the story, such as background, decision, or consequence.
+
+Read the body once and remove any sentence that does not add information.
+
+Do not repeat the subject, narrate routine edits, or inventory changed files. Omit routine formatting, lint, and test results. Mention verification only when its result or scope materially affects confidence in the change. Never claim verification that did not occur.
+
+Prefer prose. Use bullets only when three or more independently important parts would be harder to understand as a paragraph.
 
 ## Return the message
 
@@ -46,9 +62,7 @@ For a message with a body, use this template:
 ```sh
 git commit -m "<kind>: <plain-language result>
 
-<why the change was needed and the important shape of the solution>
-
-<meaningful verification, compatibility impact, or limitation, when relevant>"
+<plain retrospective account with the context worth preserving>"
 ```
 
 For a trivial change with no body, keep the command on one line:
@@ -57,15 +71,33 @@ For a trivial change with no body, keep the command on one line:
 git commit -m "<kind>: <plain-language result>"
 ```
 
-For example, a substantive change could produce:
+For example, a small change with little hidden context could produce:
 
 ```sh
-git commit -m "fixed: validate integration urls against audience
+git commit -m "changed: clarified cache defaults and startup output
 
-Integration URLs were accepted without confirming that their tokens were
-intended for the Consent API. Validate the audience during decoding and reject
-tokens that omit or target a different audience.
+In the cache settings, we documented that a zero lifetime disables expiration.
+In the startup output, we renamed the cache status to match that setting."
+```
 
-Newly issued tokens include the required audience, and coverage exercises
-missing, invalid, and valid values."
+For example, a small diff with important context could produce:
+
+```sh
+git commit -m "fixed: rejected tokens without an audience
+
+Tokens without an audience could be accepted by more than one service. We now
+reject missing audiences during decoding so every token has an explicit target."
+```
+
+For example, a larger change could produce:
+
+```sh
+git commit -m "changed: separated config writes from runtime resolution
+
+The previous loader wrote missing config during ordinary startup. That made a
+read path mutate user-authored state and made startup failures harder to reason
+about.
+
+We moved those writes into the explicit config initialization flow. Runtime
+resolution is now read-only, while existing config paths remain compatible."
 ```
