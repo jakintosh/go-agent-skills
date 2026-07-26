@@ -1,6 +1,6 @@
 # Contributing
 
-This document defines how to maintain the Pollinator Go plugin and its domain skills.
+This document defines how to maintain the Pollinator Go plugin and its skills.
 
 ## Repository structure
 
@@ -12,15 +12,15 @@ This document defines how to maintain the Pollinator Go plugin and its domain sk
 install_opencode.sh
 PRINCIPLES.md
 skills/
-  <domain-skill>/
+  <skill>/
     SKILL.md
     agents/openai.yaml
     references/
 ```
 
 - Each harness exposes `skills/` through its own install mechanism: the [`.claude-plugin/plugin.json`](.claude-plugin/plugin.json) manifest for Claude Code, the [`.codex-plugin/plugin.json`](.codex-plugin/plugin.json) manifest for Codex, and the [`install_opencode.sh`](install_opencode.sh) directory-copy script for OpenCode.
-- [`skills/`](skills/) contains the setup skill, domain skills, and selectively loaded knowledge, shared across every harness.
-- Each domain skill owns its detailed guidance. Do not duplicate the same rule or example across skills.
+- [`skills/`](skills/) contains setup, workflow, and domain skills shared across every harness.
+- Each rule or example has one owning skill. Adjacent skills route to it instead of duplicating it.
 
 [`configure-pollinator-style`](skills/configure-pollinator-style/SKILL.md) is an operational setup skill. It owns the managed routing block written into each harness's guidance file and the completion message shown after configuration. Keep its router text, script behavior, README onboarding, and result vocabulary synchronized.
 
@@ -45,9 +45,9 @@ Keep everything else — `SKILL.md` bodies, references, and the README — writt
 
 ## Skill boundaries
 
-Create one skill for a stable domain of engineering judgment. A good boundary lets most meaningful work in that domain share the same small set of invariants while loading different references for different concerns.
+Create a domain skill for stable local implementation judgment. Create a workflow skill when one outcome requires a deliberate process across several domains.
 
-Name skills broadly enough to cover design, implementation, debugging, testing, and review. Prefer a name such as `work-with-go-databases` over one limited to a single operation.
+Give a cross-domain design process one workflow owner. Let domain skills provide implementation guidance without redefining that process.
 
 Use adjacent-domain routing when a change materially affects more than one skill. Do not load a skill merely because changed code calls or implements an unchanged dependency.
 
@@ -56,7 +56,7 @@ Use adjacent-domain routing when a change materially affects more than one skill
 Keep `SKILL.md` concise and operational. Include:
 
 1. Frontmatter containing only `name` and a concise, front-loaded `description`.
-2. Universal domain boundaries and invariants.
+2. The essential workflow or universal domain boundaries.
 3. A protocol for inspecting the target repository and selecting references.
 4. Direct links to every owned reference, with precise selection conditions.
 5. Adjacent-domain routing.

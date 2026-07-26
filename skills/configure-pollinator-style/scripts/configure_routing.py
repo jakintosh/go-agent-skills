@@ -26,8 +26,8 @@ ROUTER_BLOCK = """<!-- pollinator-style:start -->
 
 For Go design, implementation, debugging, testing, and review work:
 
-1. Inspect the relevant code, then use every available Pollinator Style skill whose described domain is materially affected.
-2. Follow selected skills' adjacent-domain routing when another domain's contract or invariant changes; do not select skills merely for unchanged dependencies.
+1. Inspect the relevant code, then use every available Pollinator Style skill whose described work is materially affected.
+2. Follow selected skills' adjacent routing when another contract, invariant, or implementation domain changes; do not select skills merely for unchanged dependencies.
 3. Load only the references relevant to the concrete work and re-evaluate selection as scope emerges.
 4. Treat the guidance as a strong default while preserving coherent local conventions outside the requested scope, and explain material deviations.
 

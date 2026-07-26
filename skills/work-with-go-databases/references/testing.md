@@ -25,8 +25,10 @@ Use it when you are testing SQL-backed store behavior, adapter open behavior, sc
 - Give each test its own database state and cleanup through `t.Cleanup()` or a small setup helper.
 - Seed through adapter methods by default.
 - Keep the adapter call under test visible in the test.
+- Call stateful capabilities directly.
 - Use test helpers for opening, cleanup, deterministic fixtures, and short seed helpers.
 - Verify durable outcomes by roundtripping through store methods by default.
+- Follow rejected mutations with state assertions that prove nothing partially changed.
 - Use raw SQL only for migration, schema, or storage mechanics the store contract cannot expose clearly.
 - Add focused tests for open, schema, migration, and transaction behavior where those concerns exist.
 - Use `t.Parallel()` only when database state and helpers are clearly isolated.
@@ -150,16 +152,16 @@ import (
 	"example/internal/testutil"
 )
 
-func TestInsertDocument_UpsertPreservesCreatedAt(t *testing.T) {
+func TestUpsertDocument_PreservesCreatedAt(t *testing.T) {
 	db := testutil.SetupTestDB(t)
 
 	createdAt := time.Date(2026, 1, 15, 12, 0, 0, 0, time.UTC)
-	if err := db.InsertDocument(&service.Document{
+	if err := db.UpsertDocument(&service.Document{
 		ID:        "doc-1",
 		Title:     "Guide A",
 		CreatedAt: createdAt,
 	}); err != nil {
-		t.Fatalf("insert document: %v", err)
+		t.Fatalf("upsert document: %v", err)
 	}
 
 	doc, err := db.GetDocument("doc-1")
@@ -173,12 +175,12 @@ func TestInsertDocument_UpsertPreservesCreatedAt(t *testing.T) {
 		t.Fatalf("created at = %s, want %s", doc.CreatedAt, createdAt)
 	}
 
-	if err := db.InsertDocument(&service.Document{
+	if err := db.UpsertDocument(&service.Document{
 		ID:        "doc-1",
 		Title:     "Guide A (Revised)",
 		CreatedAt: createdAt.Add(time.Hour),
 	}); err != nil {
-		t.Fatalf("upsert document: %v", err)
+		t.Fatalf("upsert revised document: %v", err)
 	}
 
 	doc, err = db.GetDocument("doc-1")
@@ -224,8 +226,9 @@ For method-level adapter tests, cover the persistence behavior the method owns:
 - list ordering, limit, offset, and filter behavior
 - null scanning and conversion behavior
 - multi-step transactional effects
+- the store contract's preconditions, atomic effects, retry behavior, results, and errors
 
-You do not need every category for every method. Prove database-owned invariants at the adapter boundary instead of only proving that a caller ran a separate preflight check.
+You do not need every category for every method. Prove each stateful store contract directly at the adapter boundary, including unchanged durable state after rejection.
 
 ## Parallelism
 

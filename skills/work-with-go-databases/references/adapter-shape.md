@@ -63,7 +63,7 @@ The normal runtime flow is:
 2. `Open(...)` configures SQLite and runs migrations
 3. the outer layer passes `*database.DB` into `internal/service`
 4. service methods call store contracts owned by `internal/service`
-5. adapter methods execute SQL mechanically and return service-owned values
+5. adapter methods implement service-owned capabilities through storage behavior and return service-owned values
 
 ## Canonical Example
 
@@ -160,4 +160,4 @@ This is the default shape to preserve:
 - callers get a ready-to-use adapter from `Open(...)`
 - schema setup happens before the adapter is returned
 - the adapter satisfies a service-owned interface
-- method logic stays mechanical, storage-focused, and honest about constraint failures
+- method logic stays storage-focused, implements the documented store contract completely, and reports constraint failures honestly

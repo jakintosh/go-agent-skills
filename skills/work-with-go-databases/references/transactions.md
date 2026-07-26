@@ -16,9 +16,8 @@ Use it when one operation spans multiple writes, several statements need one con
 - Start a transaction before the first statement that must be coordinated.
 - Defer rollback immediately after `BeginTx(...)` succeeds.
 - Make `Commit()` the explicit success path.
-- Keep transaction-scoped helper methods mechanical.
+- Keep the public transaction boundary and success path visible.
 - Pass `*sql.Tx` into local helpers instead of hiding transaction state globally.
-- Keep policy definition and validation independent of persisted state in the service; atomically enforce store-contract preconditions that depend on current durable state in the transaction body.
 - Translate storage invariant failures into meaningful adapter errors.
 
 ## Canonical Flow
@@ -59,7 +58,7 @@ func (db *DB) PublishDocument(
 
 ## Transaction Helpers
 
-When an operation spans several statements, factor those statements into small `sql*Tx` helpers.
+Extract transaction-scoped helpers when they make SQL, scanning, or conversion clearer.
 
 ```go
 func (db *DB) sqlMarkDocumentPublishedTx(
@@ -81,9 +80,9 @@ func (db *DB) sqlMarkDocumentPublishedTx(
 }
 ```
 
-This keeps the public method readable while keeping transaction state explicit. Prefer constraints, foreign keys, conditional writes, or a single statement when they can enforce the invariant clearly; use a transaction when several storage steps must succeed or fail together.
+This keeps the public method readable while keeping transaction state explicit. Prefer constraints, foreign keys, conditional writes, or a single statement when they can enforce the invariant clearly; use a transaction when several storage steps must succeed or fail together. Choose helper granularity for readability rather than enforcing a universal decomposition.
 
-For stateful domain operations, keep transaction orchestration, ordered precondition checks, contract-outcome selection, and the single commit path visible in the public adapter method. Extract mechanical SQL and scanning into narrowly named helpers that accept `*sql.Tx`; do not hide the state transition behind vague policy-named helpers.
+Keep transaction orchestration, ordered checks, outcome selection, and the single commit path visible in a stateful adapter method. Use helpers for storage mechanics without hiding the transition.
 
 ## Consistent Multi-Query Reads
 

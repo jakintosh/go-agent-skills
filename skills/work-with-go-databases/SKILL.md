@@ -9,8 +9,8 @@ Use this skill as a database-domain knowledge layer, not only for greenfield imp
 
 ## Preserve the boundary
 
-- Keep `internal/database` mechanical and storage-focused.
-- Implement persistence contracts owned by `internal/service`; atomically enforce their persisted-state preconditions without independently inventing domain policy in the adapter.
+- Keep `internal/database` storage-focused rather than policy-owning.
+- Implement service-owned store contracts without redefining their semantics.
 - Keep SQL, driver types, scans, and storage conversions inside the database package.
 - Provide one explicit `Open(...)` entry point that returns a migrated, ready-to-use adapter.
 - Enforce durable invariants with schema constraints and storage behavior.
@@ -31,14 +31,15 @@ Use this skill as a database-domain knowledge layer, not only for greenfield imp
 - Read [adapter-shape.md](references/adapter-shape.md) when creating, opening, composing, or structurally reorganizing the database adapter. Also read it when reviewing whether storage and service responsibilities are separated correctly.
 - Read [migrations.md](references/migrations.md) for every schema change, migration-runner change, or review of durable schema evolution.
 - Also read [migrations-with-go.md](references/migrations-with-go.md) when a migration needs reads, loops, batching, conditional repair, or a data transformation clearer in Go than SQL.
-- Read [query-methods.md](references/query-methods.md) whenever adding, modifying, debugging, or reviewing ordinary reads, writes, scans, conversions, null handling, upserts, or optional filters.
+- Read [query-methods.md](references/query-methods.md) whenever adding, modifying, debugging, or reviewing ordinary reads, single-statement writes, scans, conversions, null handling, upserts, or optional filters.
 - Read [transactions.md](references/transactions.md) whenever an operation spans several statements, coordinates related writes, or requires a consistent view across multiple queries.
 - Read [testing.md](references/testing.md) whenever observable persistence behavior, migrations, opening behavior, transactions, test infrastructure, or database tests change. For implementation work, use it to plan validation even when the request does not explicitly mention tests.
 
-Read multiple references when the change crosses concerns. A new persisted field normally requires migrations, query methods, and testing. A new multi-step mutation normally requires query methods, transactions, and testing.
+Read multiple references when the change crosses concerns. A new persisted field normally requires migrations, query methods, and testing. A new multi-step mutation normally requires transactions, query methods, and testing.
 
 ## Include adjacent domains
 
+- Use [persistence design guidance](../design-go-persistence/SKILL.md) whenever a store contract, persisted invariant, or operation outcome changes.
 - Consult [service guidance](../work-with-go-services/SKILL.md) when persistence contracts, domain values, error semantics, or initialization responsibilities change.
 - Consult [config guidance](../work-with-go-config/SKILL.md) when database paths, runtime resolution, or authored configuration change.
 - Consult [server guidance](../work-with-go-servers/SKILL.md) when database opening, closing, dependency composition, or lifecycle ownership changes.
@@ -51,7 +52,7 @@ Read multiple references when the change crosses concerns. A new persisted field
 
 - Prefer the repository's documented formatting, test, lint, and check commands.
 - Run focused database tests first, then the broader relevant suite when implementation changes are requested.
-- Verify both immediate results and durable round trips for persistence changes.
+- Verify both immediate results and durable round trips for persistence changes, including unchanged state after rejected mutations.
 - Exercise migration behavior from the oldest supported schema state affected by the change.
 - Check rollback and constraint behavior when atomicity or durable invariants matter.
 - For reviews, report concrete behavioral or architectural risks; do not flag harmless stylistic variation that preserves the boundary and invariants.

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Design Go Persistence"
+  short_description: "Design durable Go persistence boundaries"
+  default_prompt: "Use $design-go-persistence to design this persisted operation before implementing it."

@@ -4,11 +4,11 @@ These principles capture the design values that recur across Pollinator Go's dom
 
 ## Keep ownership clear
 
-Give behavior, contracts, and lifecycle responsibilities one clear owner. Keep integration mechanics at the boundary that translates between owners.
+Define an operation's meaning and outcomes at the domain boundary, and enforce each invariant at the boundary that can guarantee it. Keep integration mechanics with the adapter that translates between owners.
 
 ## Keep contracts explicit
 
-Make important contracts and transitions visible at their owning boundary, even when explicitness introduces a small amount of repetition.
+Make important operations, inputs, outcomes, and lifecycle transitions visible at their owning boundary. Prefer a complete capability over fragments that callers must compose correctly.
 
 ## Define strong defaults
 

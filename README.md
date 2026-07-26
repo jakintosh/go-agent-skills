@@ -2,7 +2,7 @@
 
 Pollinator Go is a plugin for agentic coding harnesses containing Studio Pollinator's opinionated Go engineering guidance.
 
-The plugin uses progressive disclosure so ordinary design, implementation, debugging, testing, and review tasks can draw on detailed guidance without loading the entire knowledge base. Skill metadata identifies relevant domains, each `SKILL.md` selects the applicable concerns, and focused references supply detailed rules and examples only when needed.
+The plugin uses progressive disclosure so ordinary Go work can draw on focused workflows and domain guidance without loading the entire knowledge base. Skill metadata selects relevant work, `SKILL.md` directs it, and references provide details only when needed.
 
 ## Supported harnesses
 
@@ -42,18 +42,19 @@ skills/
     SKILL.md
     agents/openai.yaml
     scripts/
-  <domain-skill>/
+  <skill>/
     SKILL.md
     agents/openai.yaml
     references/
 ```
 
-Every harness draws on the same skills under `skills/`: Claude Code and Codex discover them through their manifests, and OpenCode installs copies with `install_opencode.sh`. Domain knowledge lives in the narrowest reference that owns the concern, while `SKILL.md` files contain activation boundaries, universal invariants, reference routing, adjacent-domain routing, and validation behavior. [`PRINCIPLES.md`](PRINCIPLES.md) captures cross-cutting values used to interpret and evolve that guidance. Per-skill `agents/openai.yaml` files carry Codex interface metadata and are ignored by harnesses that do not use them.
+Every harness draws on the same skills under `skills/`: Claude Code and Codex discover them through their manifests, and OpenCode installs copies with `install_opencode.sh`. Workflow skills lead outcomes that cross domains; domain skills provide local implementation guidance. [`PRINCIPLES.md`](PRINCIPLES.md) captures cross-cutting values. Per-skill `agents/openai.yaml` files carry Codex interface metadata and are ignored by other harnesses.
 
 ## Skill catalog
 
-| Skill | Domain |
+| Skill | Purpose |
 | --- | --- |
+| [`design-go-persistence`](skills/design-go-persistence/SKILL.md) | Service-owned store contracts, durable invariants, atomic effects, retry semantics, and their proof |
 | [`work-with-go-services`](skills/work-with-go-services/SKILL.md) | Domain behavior, service construction, errors, permissions, service-owned stores, bootstrap, and lifecycle hooks |
 | [`work-with-go-databases`](skills/work-with-go-databases/SKILL.md) | SQL adapters, migrations, queries, scans, transactions, durable constraints, and persistence tests |
 | [`work-with-go-http-apis`](skills/work-with-go-http-apis/SKILL.md) | JSON HTTP contracts, DTOs, handlers, error mapping, API tests, keys, and CORS |
@@ -91,7 +92,7 @@ The configurator reports the harness, the guidance file, whether it changed, the
 
 ## Contributing
 
-Add knowledge to the narrowest reference that owns the concern. Change `SKILL.md` when activation, universal invariants, consultation behavior, adjacent-domain routing, or reference selection changes. Create a new skill only for a stable domain that should activate independently.
+Add knowledge to the narrowest skill that owns the concern. Use workflow skills for deliberate cross-domain outcomes and domain skills for local implementation guidance.
 
 Use [`PRINCIPLES.md`](PRINCIPLES.md) for concise values that recur across multiple domains, not for individual rules or a history of proposals.
 

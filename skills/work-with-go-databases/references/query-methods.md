@@ -1,8 +1,8 @@
 # Database Query Methods
 
-This guide defines the default shape for implementing store methods in `internal/database`.
+This guide defines the default shape for ordinary query methods in `internal/database`.
 
-Use it when you are adding a read method, write method, upsert, or query with optional filters.
+Use it when adding an ordinary read, single-statement write, upsert, scan, or query with optional filters. Use the [persistence design skill](../../design-go-persistence/SKILL.md) when the store contract changes.
 
 ## Contents
 
@@ -15,7 +15,7 @@ Use it when you are adding a read method, write method, upsert, or query with op
 
 ## Required Instructions
 
-- Keep adapter methods mechanical.
+- Keep ordinary query methods direct and storage-focused.
 - Use positional SQL parameters.
 - Scan into local primitives or `sql.Null*` values.
 - Build service-owned values explicitly after scanning.
@@ -23,6 +23,7 @@ Use it when you are adding a read method, write method, upsert, or query with op
 - Check `rows.Err()` after iteration.
 - Keep dynamic query construction local and readable.
 - Apply update inputs without rewriting unchanged state.
+- Preserve contract distinctions between missing resources, empty results, and successful mutations.
 
 ## Read Method Shape
 
@@ -56,7 +57,7 @@ func (db *DB) GetDocument(
 		&createdAtUnix,
 	); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, nil
+			return nil, service.ErrNotFound
 		}
 		return nil, fmt.Errorf("get document %q: %w", id, err)
 	}
@@ -166,7 +167,7 @@ func (db *DB) GetPatron(
 Writes should keep the same direct shape: execute SQL, wrap errors, return.
 
 ```go
-func (db *DB) InsertDocument(
+func (db *DB) UpsertDocument(
 	doc *service.Document,
 	) error {
 	_, err := db.Conn.Exec(`
@@ -179,7 +180,7 @@ func (db *DB) InsertDocument(
 		doc.CreatedAt.Unix(),
 	)
 	if err != nil {
-		return fmt.Errorf("insert document %q: %w", doc.ID, err)
+		return fmt.Errorf("upsert document %q: %w", doc.ID, err)
 	}
 
 	return nil
@@ -189,6 +190,10 @@ func (db *DB) InsertDocument(
 Use upserts when the operation is naturally idempotent and the conflict behavior is part of the method's contract.
 
 For ordinary resource updates, accept the update-shaped input from the service contract and apply only the fields present in that input. Preserve unspecified fields and unchanged relationships. For relationship sets, prefer targeted inserts, targeted deletes, upserts, or set-diff SQL over rewriting the whole relationship when only part of it changed.
+
+When a contract names a parent, prove that the parent exists before returning its children if the query would otherwise make "missing" indistinguishable from "empty." Resolve the parent and list its children through one consistent view when that distinction must survive across multiple statements.
+
+Check affected rows or resolve referenced records explicitly when an `INSERT ... SELECT`, conditional update, or delete can execute successfully without changing the required row. A statement that ran without a driver error did not necessarily fulfill the store contract.
 
 Test query methods with [testing.md](./testing.md), especially storage invariants, not-found behavior, constraint failures, update preservation, ordering, filtering, and null conversion.
 

@@ -51,7 +51,7 @@ For global scope, request filesystem approval when the environment requires it. 
 After a successful repository configuration, inspect only enough of the repository to add one useful sentence:
 
 - If `go.mod` exists, inspect recognizable package and project paths such as `internal/service`, `internal/database`, `internal/api`, `internal/web`, `internal/server`, `internal/config`, `cmd`, `pkg`, and `Makefile`. Name up to three clearly detected domains and say that ordinary requests affecting them can route to the matching skills automatically.
-- If `go.mod` exists without recognizable domain paths, say that Pollinator routing is ready for applicable Go work and will select installed domain skills as the code evolves.
+- If `go.mod` exists without recognizable domain paths, say that Pollinator routing is ready for applicable Go work and will select installed skills as the code evolves.
 - If no `go.mod` exists, say that no Go module was detected and the routing will remain dormant until applicable Go work appears.
 
 Use the repository’s actual name from the script result. Mention only domains supported by concrete repository evidence; do not speculate about architecture. Omit the personalized sentence for global scope or when inspection is unavailable.
@@ -68,7 +68,7 @@ Pollinator Style is ready for <repository name or “your global agent profile�
 
 <optional repository-specific sentence>
 
-How it works: You do not need to mention Pollinator Style or name a skill in ordinary requests. Ask for the change normally. The router tells the agent to inspect the code, identify every affected engineering domain, select the matching installed Pollinator Style skills, and load only the references needed for the work.
+How it works: You do not need to mention Pollinator Style or name a skill in ordinary requests. Ask for the change normally. The router tells the agent to inspect the code, select the matching installed Pollinator Style skills, and load only the references needed for the work.
 
 <new-session sentence>
 ```
