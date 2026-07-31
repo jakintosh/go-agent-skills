@@ -1,6 +1,6 @@
 ---
 name: work-with-go-clis
-description: Guide Go command-line interfaces. Use for design, implementation, debugging, testing, or review of command trees, commands and options, command-go handlers, API clients, named environments, config wiring, version metadata, or cmd files.
+description: Guide Go command-line interfaces. Use for design, implementation, debugging, testing, or review of command trees, commands and options, command-go handlers, API clients, named environments, config wiring, version metadata, or cmd files. Not used for TUI.
 ---
 
 # Work with Go CLIs
